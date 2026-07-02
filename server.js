@@ -19,6 +19,7 @@ async function cached(key, ttlMs, fn) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.t < ttlMs) return hit.v;
   const v = await fn();
+  if (cache.size > 250) cache.delete(cache.keys().next().value); // cap memory from arbitrary symbol lookups
   cache.set(key, { t: Date.now(), v });
   return v;
 }
@@ -72,6 +73,43 @@ app.get("/api/history", async (_req, res) => {
     res.json(data);
   } catch (e) {
     res.status(502).json({ error: String(e.message || e) });
+  }
+});
+
+// GET /api/analyze?symbol=AAPL -> { symbol, name, currency, price, prevClose, timestamps, closes }
+// 1 year of daily closes for any ticker so the browser can chart it and compute
+// trend/momentum indicators. Cached 5 min per symbol.
+const SYMBOL_RE = /^[A-Za-z0-9.\-^=]{1,15}$/;
+app.get("/api/analyze", async (req, res) => {
+  const sym = String(req.query.symbol || "").trim().toUpperCase();
+  if (!SYMBOL_RE.test(sym)) return res.status(400).json({ error: "invalid symbol" });
+  try {
+    const data = await cached("analyze:" + sym, 300_000, async () => {
+      const c = await fetchChart(sym, "1y");
+      const meta = c.meta || {};
+      const ts = c.timestamp || [];
+      const rawCloses = c.indicators?.quote?.[0]?.close || [];
+      const timestamps = [];
+      const closes = [];
+      for (let i = 0; i < rawCloses.length; i++) {
+        if (rawCloses[i] != null) { timestamps.push(ts[i]); closes.push(rawCloses[i]); }
+      }
+      if (closes.length < 30) throw new Error("not enough price history for this symbol");
+      return {
+        symbol: meta.symbol || sym,
+        name: meta.shortName || meta.longName || meta.symbol || sym,
+        currency: meta.currency || "",
+        price: meta.regularMarketPrice ?? closes[closes.length - 1],
+        prevClose: meta.chartPreviousClose ?? meta.previousClose ?? closes[closes.length - 2] ?? closes[closes.length - 1],
+        timestamps,
+        closes,
+      };
+    });
+    res.json(data);
+  } catch (e) {
+    const msg = String(e.message || e);
+    const notFound = /HTTP 404|not enough|empty result/.test(msg);
+    res.status(notFound ? 404 : 502).json({ error: msg });
   }
 });
 
