@@ -113,6 +113,31 @@ app.get("/api/analyze", async (req, res) => {
   }
 });
 
+// ---- real-time last trade via Finnhub (set FINNHUB_API_KEY to enable) ----
+// History/indicators still come from Yahoo (daily closes); this endpoint only
+// supplies the live price so the browser can poll it every few seconds.
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY || process.env.FINNHUB_KEY || "";
+// GET /api/quote?symbol=AAPL -> { price, change, percent, prevClose, ... }
+// 503 if no key is configured; 3s cache so many clients don't burn the rate limit.
+app.get("/api/quote", async (req, res) => {
+  const sym = String(req.query.symbol || "").trim().toUpperCase();
+  if (!SYMBOL_RE.test(sym)) return res.status(400).json({ error: "invalid symbol" });
+  if (!FINNHUB_KEY) return res.status(503).json({ error: "realtime not configured" });
+  try {
+    const data = await cached("q:" + sym, 3_000, async () => {
+      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${FINNHUB_KEY}`;
+      const r = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(6000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json();
+      if (j == null || j.c == null || j.c === 0) throw new Error("no realtime data"); // Finnhub returns c:0 for unknown symbols
+      return { symbol: sym, price: j.c, change: j.d, percent: j.dp, prevClose: j.pc, high: j.h, low: j.l, open: j.o, t: j.t };
+    });
+    res.json(data);
+  } catch (e) {
+    res.status(502).json({ error: String(e.message || e) });
+  }
+});
+
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 app.use(express.static(path.join(__dirname, "public")));

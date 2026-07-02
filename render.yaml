@@ -5,3 +5,9 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
+    envVars:
+      # Optional: enables real-time last price in the stock search.
+      # Leave unset and the app falls back to delayed daily closes.
+      # Render prompts for the value at deploy (sync:false = not stored in repo).
+      - key: FINNHUB_API_KEY
+        sync: false

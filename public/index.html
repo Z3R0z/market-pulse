@@ -189,6 +189,7 @@
           <div class="lookup-px">
             <div class="px" id="luPx">—</div>
             <div class="chg" id="luChg">—</div>
+            <div style="text-align:right; margin-top:6px;"><span class="live-badge snap" id="luBadge">DELAYED</span></div>
           </div>
         </div>
 
@@ -582,6 +583,7 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
   const CHART  = document.getElementById("stockChart");
   const DEFAULT_HINT = "Try AAPL, NVDA, MSFT, TSLA, AMZN, GOOGL, SPY, BTC-USD.";
   const SYMBOL_RE = /^[A-Za-z0-9.\-^=]{1,15}$/;
+  let pollTimer=null, fails=0, state=null; // live-quote polling state
 
   async function getJSON(url){
     const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
@@ -756,7 +758,56 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
     x+="Indicators describe what price has already done, not what it will do — read this as current conditions, not a forecast.";
     document.getElementById("luExplain").textContent = x;
 
+    state = { symbol:d.symbol, name:d.name, currency:d.currency, closes:closes.slice(), ts:ts, prevClose:prev };
     result.hidden=false;
+    startLive(); // begin real-time price updates for this symbol
+  }
+
+  /* ---- real-time price polling (Finnhub via /api/quote) ---- */
+  function setBadge(txt, live){
+    const b=document.getElementById("luBadge");
+    b.textContent=txt;
+    b.className="live-badge "+(live?"live":"snap");
+  }
+  function stopTimer(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
+  function stopLive(txt){ stopTimer(); setBadge(txt||"DELAYED", false); }
+  function bumpFail(){ if(++fails>=3) stopLive("DELAYED"); }
+  function applyLive(q){
+    const price=q.price;
+    const prev=(q.prevClose!=null)?q.prevClose:state.prevClose;
+    const chg=(q.change!=null)?q.change:(price-prev);
+    const pct=(q.percent!=null)?q.percent:(prev?chg/prev*100:0);
+    const sign=chg>=0?"+":"-";
+    const cur=state.currency==="USD"?"$":"";
+    document.getElementById("luPx").textContent=cur+fmt(price);
+    const chgEl=document.getElementById("luChg");
+    chgEl.textContent=`${sign}${fmt(Math.abs(chg))} (${sign}${Math.abs(pct).toFixed(2)}%) today`;
+    chgEl.className="chg "+(chg>=0?"u":"d");
+    if(state.closes && state.closes.length){        // let the chart's last point track the live price
+      state.closes[state.closes.length-1]=price;
+      drawChart(state.closes, state.ts);
+    }
+    setBadge("● LIVE", true);
+  }
+  async function liveTick(){
+    if(!state || document.hidden) return;            // pause when tab is hidden
+    const sym=state.symbol;
+    let r;
+    try{ r=await fetch("/api/quote?symbol="+encodeURIComponent(sym), {signal:AbortSignal.timeout(6000)}); }
+    catch(e){ return bumpFail(); }
+    if(r.status===503){ stopLive("DELAYED"); return; } // no API key configured — stop quietly
+    if(!r.ok){ return bumpFail(); }
+    let q; try{ q=await r.json(); }catch(e){ return bumpFail(); }
+    if(!q || q.price==null){ return bumpFail(); }
+    if(state.symbol!==sym) return;                    // a newer search superseded this one
+    fails=0;
+    applyLive(q);
+  }
+  function startLive(){
+    stopTimer(); fails=0;
+    setBadge("CONNECTING…", false);
+    liveTick();
+    pollTimer=setInterval(liveTick, 4000);
   }
 
   async function analyze(sym, isAuto){
@@ -775,6 +826,7 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
       hint.textContent="Showing "+(d.symbol||sym)+". Data is delayed and for education only.";
     }catch(e){
       const m=String(e.message||e);
+      stopTimer(); // don't keep polling a symbol whose chart we're hiding
       if(isAuto){
         // no backend (e.g. opened from disk) — stay quiet, keep the section tidy
         result.hidden=true; hint.className="search-hint"; hint.textContent=DEFAULT_HINT;

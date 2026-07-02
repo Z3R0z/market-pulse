@@ -32,6 +32,25 @@ history 10 min) so the data source is never hammered.
   npm start
   open http://localhost:3000
 
+## Real-time quotes (optional)
+
+The "Analyze any stock" search shows a LIVE last price when a Finnhub API
+key is present (the free tier is real-time for U.S. stocks/ETFs). Without
+a key it still works — the price just carries a DELAYED badge and uses the
+latest daily close.
+
+  1. Get a free key at finnhub.io (Dashboard -> API key).
+  2. Local:
+       macOS/Linux:  FINNHUB_API_KEY=xxxx npm start
+       Windows PS:   $env:FINNHUB_API_KEY="xxxx"; npm start
+  3. Render: Dashboard -> your service -> Environment -> add
+       FINNHUB_API_KEY = xxxx   (never commit the key to the repo)
+
+History and the trend/momentum indicators always come from Yahoo (daily
+closes); the key only powers the live price, polled every ~4s. Free
+real-time covers U.S. stocks/ETFs — not indices or futures — so the top
+quote board stays on the delayed Yahoo feed.
+
 ## Good to know
 
 - FREE PLAN SLEEP: Render free web services spin down after ~15 min of
