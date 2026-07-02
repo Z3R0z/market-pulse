@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Pulse — U.S. Markets Analysis & H2 2026 Outlook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF2F0;
+    --panel:#FFFFFF;
+    --ink:#16232B;
+    --ink-soft:#4A5A63;
+    --line:#D4DCD8;
+    --up:#0E7A4E;
+    --down:#C0443A;
+    --amber:#D98E1F;
+    --band:#DCE6E1;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --sans:'IBM Plex Sans', system-ui, sans-serif;
+    --cond:'IBM Plex Sans Condensed', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.55;}
+
+  /* ---------- ticker ---------- */
+  .ticker{background:var(--ink); color:#E8EEEA; overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:3px solid var(--amber);}
+  .ticker-track{display:inline-block; animation:scroll 42s linear infinite;}
+  .ticker span{margin:0 26px;}
+  .ticker .u{color:#5FD79E;} .ticker .d{color:#F08A80;}
+  @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+  @media (prefers-reduced-motion: reduce){
+    .ticker-track{animation:none; white-space:normal;}
+    *{transition:none !important;}
+  }
+
+  .wrap{max-width:1080px; margin:0 auto; padding:0 22px;}
+
+  /* ---------- header / hero ---------- */
+  header{padding:44px 0 12px;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft);}
+  h1{font-family:var(--cond); font-weight:700; font-size:clamp(40px,6vw,68px); line-height:1.02; letter-spacing:-0.01em; margin:10px 0 6px;}
+  .hero-sub{max-width:720px; color:var(--ink-soft); font-size:16px;}
+  .asof{font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:14px; display:flex; align-items:center; gap:8px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--down); display:inline-block;}
+
+  /* ---------- quote board ---------- */
+  .board{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:28px 0 8px;}
+  .q{background:var(--panel); padding:16px 16px 14px;}
+  .q .name{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);}
+  .q .px{font-family:var(--mono); font-weight:600; font-size:clamp(18px,2.4vw,24px); margin-top:6px;}
+  .q .chg{font-family:var(--mono); font-size:13px; margin-top:2px;}
+  .q .chg.u{color:var(--up);} .q .chg.d{color:var(--down);}
+  .q .note{font-size:12px; color:var(--ink-soft); margin-top:6px;}
+  .board-cap{font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:40px;}
+
+  /* ---------- sections ---------- */
+  section{padding:36px 0;}
+  .sec-head{display:flex; align-items:baseline; gap:14px; border-top:2px solid var(--ink); padding-top:14px; margin-bottom:22px;}
+  .sec-head h2{font-family:var(--cond); font-weight:700; font-size:clamp(26px,3.4vw,36px); letter-spacing:-0.01em;}
+  .sec-head .tag{font-family:var(--mono); font-size:12px; color:var(--ink-soft); letter-spacing:.1em; text-transform:uppercase;}
+
+  .themes{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
+  .theme{background:var(--panel); border:1px solid var(--line); padding:22px;}
+  .theme h3{font-family:var(--cond); font-weight:600; font-size:22px; margin-bottom:8px;}
+  .theme p{font-size:14.5px; color:var(--ink-soft);}
+  .theme .stat{font-family:var(--mono); font-size:12.5px; color:var(--ink); background:var(--paper); display:inline-block; padding:3px 8px; margin-top:12px; border-left:3px solid var(--amber);}
+
+  /* ---------- scenario / fan chart ---------- */
+  .scenario-wrap{background:var(--panel); border:1px solid var(--line); padding:26px;}
+  .scn-buttons{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .scn-btn{font-family:var(--mono); font-size:13px; letter-spacing:.06em; text-transform:uppercase; padding:9px 16px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer;}
+  .scn-btn:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
+  .scn-btn.active{background:var(--ink); color:#fff;}
+  .chart-box{width:100%; overflow-x:auto;}
+  svg{display:block; width:100%; height:auto;}
+  .scn-detail{margin-top:20px; border-top:1px dashed var(--line); padding-top:18px; display:grid; grid-template-columns:200px 1fr; gap:20px;}
+  .scn-num{font-family:var(--mono);}
+  .scn-num .lvl{font-size:34px; font-weight:600; line-height:1.1;}
+  .scn-num .pct{font-size:15px;}
+  .scn-num .lbl{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px;}
+  .scn-text h3{font-family:var(--cond); font-size:22px; margin-bottom:6px;}
+  .scn-text p{font-size:14.5px; color:var(--ink-soft);}
+  .scn-text ul{margin:10px 0 0 18px; font-size:14px; color:var(--ink-soft);}
+  .scn-text li{margin-bottom:4px;}
+
+  .street{margin-top:26px;}
+  .street table{width:100%; border-collapse:collapse; font-size:14px;}
+  .street th{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-align:left; color:var(--ink-soft); border-bottom:1px solid var(--ink); padding:8px 10px;}
+  .street td{padding:9px 10px; border-bottom:1px solid var(--line);}
+  .street td.mono{font-family:var(--mono);}
+
+  .caution{margin-top:26px; background:#FBF4E4; border:1px solid #E4CE9A; padding:18px 20px; font-size:14px;}
+  .caution strong{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; display:block; margin-bottom:6px; color:#8A6414;}
+
+  /* ---------- live badge ---------- */
+  .live-badge{font-family:var(--mono); font-size:11px; letter-spacing:.1em; padding:3px 9px; border:1px solid var(--line); background:var(--panel);}
+  .live-badge.live{color:var(--up); border-color:var(--up);}
+  .live-badge.snap{color:var(--amber); border-color:var(--amber);}
+  .refresh-btn{font-family:var(--mono); font-size:11px; letter-spacing:.08em; padding:3px 10px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer;}
+  .refresh-btn:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
+
+  /* ---------- technical read ---------- */
+  .tech-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .ind{background:var(--panel); border:1px solid var(--line); padding:20px;}
+  .ind .k{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);}
+  .ind .v{font-family:var(--mono); font-weight:600; font-size:30px; margin:6px 0 2px;}
+  .ind .sig{font-family:var(--mono); font-size:12px; margin-bottom:10px;}
+  .sig.pos{color:var(--up);} .sig.neg{color:var(--down);} .sig.neu{color:var(--amber);}
+  .ind p{font-size:13px; color:var(--ink-soft);}
+  .meter{position:relative; height:10px; background:var(--band); margin:8px 0 6px;}
+  .meter .fill{position:absolute; top:0; left:0; height:100%; background:var(--ink); transition:width .5s ease;}
+  .meter .mark{position:absolute; top:-3px; width:2px; height:16px; background:var(--down); opacity:.5;}
+  .meter-lbl{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--ink-soft);}
+  .tech-read{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--ink); padding:22px; margin-top:18px;}
+  .tech-read h3{font-family:var(--cond); font-size:22px; margin-bottom:8px;}
+  .tech-read p{font-size:14.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .tech-read p:last-child{margin-bottom:0;}
+  .lvls{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px;}
+  .lvl-chip{font-family:var(--mono); font-size:12.5px; padding:6px 12px; border:1px dashed var(--line);}
+  .lvl-chip b{font-weight:600;}
+  .lvl-chip.res b{color:var(--down);} .lvl-chip.sup b{color:var(--up);}
+
+  footer{border-top:2px solid var(--ink); margin-top:30px; padding:26px 0 60px; font-size:13px; color:var(--ink-soft);}
+  footer p{max-width:820px; margin-bottom:10px;}
+
+  @media (max-width:820px){
+    .board{grid-template-columns:repeat(2,1fr);}
+    .themes{grid-template-columns:1fr;}
+    .scn-detail{grid-template-columns:1fr;}
+    .tech-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<header class="wrap">
+  <div class="eyebrow">Market Pulse · U.S. Equities</div>
+  <h1>Records above,<br>rate risk below.</h1>
+  <p class="hero-sub">The Dow touched a fresh all-time high on July&nbsp;1 before fading, while the Nasdaq slipped as investors took profits in semiconductors — the stocks that powered an 80%+ first-half surge. Underneath the rally: 4%+ inflation, a Fed debating hikes rather than cuts, and an AI capex boom carrying roughly half of all S&amp;P 500 earnings growth.</p>
+  <div class="asof"><span class="dot" id="statusDot"></span> <span id="asofText">CLOSE · WED JUL 01 2026 · NYSE / NASDAQ</span> <span class="live-badge snap" id="liveBadge">SNAPSHOT</span> <button class="refresh-btn" id="refreshBtn" type="button">↻ REFRESH</button></div>
+</header>
+
+<main class="wrap">
+
+  <div class="board" id="board"></div>
+  <div class="board-cap">Closing values, July 1, 2026. Dow intraday record high: 52,742.66.</div>
+
+  <section id="analysis">
+    <div class="sec-head"><h2>What's driving the tape</h2><span class="tag">Analysis</span></div>
+    <div class="themes">
+      <div class="theme">
+        <h3>The AI trade is the market</h3>
+        <p>Hyperscaler capital spending is the engine of this bull run. Google, Amazon, Microsoft and Meta plan roughly $725B in 2026 capex — up ~77% from last year — and AI-infrastructure beneficiaries account for about half of all S&amp;P 500 earnings growth. Semis surged 80%+ in H1 before this week's profit-taking, and Meta jumped on plans to sell surplus compute as a cloud business.</p>
+        <span class="stat">Top 10 stocks ≈ 40% of S&amp;P 500 market cap</span>
+      </div>
+      <div class="theme">
+        <h3>Inflation flipped the Fed script</h3>
+        <p>May inflation hit 4.2% — a three-year high — and markets are now pricing the risk of a rate <em>hike</em>, not cuts, in the back half. Fed Chair Kevin Warsh reiterated the 2% target this week without offering forward guidance. Thursday's early jobs report (moved up for July 4) is the next catalyst; ADP already showed private hiring slowing to 98K.</p>
+        <span class="stat">May CPI 4.2% · highest since 2023</span>
+      </div>
+      <div class="theme">
+        <h3>Geopolitics &amp; trade friction</h3>
+        <p>The Iran conflict has disrupted flows through the Strait of Hormuz, and peace talks in Qatar faltered this week. Oil sits near $68 — but a sustained move above $100 would feed straight into inflation and rates. Add tariff escalation planned for late July and the non-renewal of the USMCA trade pact, and the policy backdrop is a live risk.</p>
+        <span class="stat">Hormuz tanker traffic ~4/wk vs ~102 normal (May)</span>
+      </div>
+      <div class="theme">
+        <h3>Valuations leave little cushion</h3>
+        <p>The index trades near 22× forward earnings, and the Shiller CAPE crossed 41 — its second-highest reading in over 140 years, exceeded only during the dot-com era. The bull case rests on earnings delivering: consensus sees ~23–25% profit growth in 2026. That's spectacular — and historically, growth that hot is hard to sustain, which caps how much investors will pay for it.</p>
+        <span class="stat">Shiller CAPE 41.6 · 2nd highest on record</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="technicals">
+    <div class="sec-head"><h2>Post-market technical read</h2><span class="tag">Indicators · S&amp;P 500</span></div>
+    <div class="tech-grid">
+      <div class="ind">
+        <div class="k">RSI (14-day)</div>
+        <div class="v" id="rsiVal">59.8</div>
+        <div class="sig pos" id="rsiSig">BULLISH · NOT OVERBOUGHT</div>
+        <div class="meter"><div class="fill" id="rsiFill" style="width:59.8%"></div><div class="mark" style="left:30%"></div><div class="mark" style="left:70%"></div></div>
+        <div class="meter-lbl"><span>0 · OVERSOLD 30</span><span>70 OVERBOUGHT · 100</span></div>
+        <p>Momentum is positive with room to run before the 70 overbought line — but RSI is making lower highs while price makes higher highs, a negative divergence worth watching.</p>
+      </div>
+      <div class="ind">
+        <div class="k">Trend · vs moving averages</div>
+        <div class="v" id="maVal">+8.2%</div>
+        <div class="sig pos" id="maSig">ABOVE 50-DMA &amp; 200-DMA</div>
+        <p id="maText">Price (7,483) sits above the 50-day average (~7,380–7,413) and well above the 200-day (~6,934). Rising 50 over rising 200 — the long-term uptrend structure is fully intact. The 50-DMA is the first line of support on any pullback.</p>
+      </div>
+      <div class="ind">
+        <div class="k">MACD (12, 26, 9)</div>
+        <div class="v" id="macdVal">+25.0</div>
+        <div class="sig pos" id="macdSig">POSITIVE · ABOVE SIGNAL</div>
+        <p>The MACD line is positive and above its signal line, confirming the medium-term upswing off the late-March low near 6,344. A cross below signal would be the first mechanical warning.</p>
+      </div>
+      <div class="ind">
+        <div class="k">Breadth · % above 50-DMA</div>
+        <div class="v">62.6%</div>
+        <div class="sig neu">MODERATE PARTICIPATION</div>
+        <div class="meter"><div class="fill" style="width:62.6%"></div><div class="mark" style="left:50%"></div></div>
+        <div class="meter-lbl"><span>0%</span><span>100%</span></div>
+        <p>About 63% of S&amp;P constituents trade above their 50-day average (61.6% above the 200-day) — near the historical midpoint. The rally is real but still leans on megacap leadership; 32 stocks hit 52-week highs today.</p>
+      </div>
+      <div class="ind">
+        <div class="k">Volatility · VIX</div>
+        <div class="v" id="vixVal">16.6</div>
+        <div class="sig neu">CALM · COMPLACENCY ZONE</div>
+        <div class="meter"><div class="fill" id="vixFill" style="width:20.7%"></div><div class="mark" style="left:25%"></div><div class="mark" style="left:37.5%"></div></div>
+        <div class="meter-lbl"><span>10</span><span>20 · 30 · 90</span></div>
+        <p>Sub-17 VIX signals a relaxed market despite rate-hike chatter and Mideast headlines. Cheap hedges cut both ways: low fear often precedes low returns, and shocks hit harder from calm.</p>
+      </div>
+      <div class="ind">
+        <div class="k">Distance from 52-wk high</div>
+        <div class="v" id="hiVal">−1.8%</div>
+        <div class="sig pos">NEAR HIGHS · CONSTRUCTIVE</div>
+        <p id="hiText">The index closed within 2% of its 7,621 record. Shallow pullbacks near highs typically reflect rotation (today: out of semis, into Meta/software) rather than distribution — until support breaks.</p>
+      </div>
+    </div>
+
+    <div class="tech-read">
+      <h3>The read after today's close</h3>
+      <p><b>Setup: constructive, momentum cooling at resistance.</b> The daily technical composite still screens as a "strong buy" on moving averages (12 of 12 buy signals on MA5–MA200), and the index is consolidating just under the 7,600–7,621 ceiling after rallying ~18% off the late-March low of 6,344. Today's −0.22% dip was rotation, not breakdown: semis gave back gains while Meta (+8%) and defensives absorbed the flow.</p>
+      <p><b>The bull trigger:</b> a daily close above 7,621 would clear the June record and, per chart watchers, open a measured path toward 8,000 — conveniently where the top of the fan chart below already sits. Bulls also get an earnings-season tailwind starting with banks July 14–15.</p>
+      <p><b>The bear tell:</b> the RSI negative divergence plus moderate breadth means fewer stocks are doing more of the lifting. Lose the 50-DMA (~7,380–7,415) on a closing basis and the technical picture flips from "buy the dip" to "sell the rip," with the gap down toward the 200-DMA near 6,934 as the risk zone. Tomorrow's early jobs report is the immediate catalyst either way.</p>
+      <div class="lvls">
+        <span class="lvl-chip res">RESISTANCE <b>7,600 – 7,621</b></span>
+        <span class="lvl-chip res">BREAKOUT TARGET <b>8,000</b></span>
+        <span class="lvl-chip sup">SUPPORT (50-DMA) <b>≈7,380 – 7,415</b></span>
+        <span class="lvl-chip sup">MAJOR SUPPORT (200-DMA) <b>≈6,934</b></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="outlook">
+    <div class="sec-head"><h2>Where the S&amp;P 500 could finish 2026</h2><span class="tag">Scenarios · Illustrative</span></div>
+    <div class="scenario-wrap">
+      <div class="scn-buttons" role="tablist" aria-label="Scenario selector">
+        <button class="scn-btn" data-s="bear" role="tab">▼ Bear</button>
+        <button class="scn-btn active" data-s="base" role="tab" aria-selected="true">● Base</button>
+        <button class="scn-btn" data-s="bull" role="tab">▲ Bull</button>
+      </div>
+
+      <div class="chart-box">
+        <svg id="fan" viewBox="0 0 900 380" role="img" aria-label="Fan chart of S&P 500 scenario paths from July to December 2026"></svg>
+      </div>
+
+      <div class="scn-detail">
+        <div class="scn-num">
+          <div class="lvl" id="scnLvl">7,850</div>
+          <div class="pct" id="scnPct">+4.9% from today</div>
+          <div class="lbl">Year-end S&amp;P 500</div>
+        </div>
+        <div class="scn-text">
+          <h3 id="scnTitle">Base case — earnings carry the load</h3>
+          <p id="scnBody"></p>
+          <ul id="scnList"></ul>
+        </div>
+      </div>
+
+      <div class="street">
+        <table>
+          <thead><tr><th>Published year-end targets</th><th>S&amp;P 500 level</th><th>Implied move</th></tr></thead>
+          <tbody>
+            <tr><td>Bank of America (most cautious major)</td><td class="mono">7,100</td><td class="mono" style="color:var(--down)">−5.1%</td></tr>
+            <tr><td>Street median (19 firms, Reuters/Yardeni)</td><td class="mono">7,850</td><td class="mono" style="color:var(--up)">+4.9%</td></tr>
+            <tr><td>Deutsche Bank / Capital Economics (high end)</td><td class="mono">8,000</td><td class="mono" style="color:var(--up)">+6.9%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="caution">
+        <strong>Read this before the chart</strong>
+        These scenarios are illustrative framings built from published analyst targets and current conditions — they are not investment advice, and nobody can reliably predict markets. Over the last four years, the Street's median year-end target missed by an average of ~16 percentage points. Strategists also warn that mid-term election years historically bring the deepest drawdowns of the presidential cycle (avg. ~18% intra-year since 1946).
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Disclaimer:</strong> This page is for information and education only. It is not financial, investment, or trading advice, and Claude is not a financial advisor. Figures reflect reporting from Yahoo Finance, CNBC, Trading Economics, Schwab, Fidelity, Goldman Sachs, Forbes and CNN as of July 1, 2026 and may contain delays or errors. Past performance and analyst forecasts do not predict future results — consult a licensed professional before making investment decisions.</p>
+    <p style="font-family:var(--mono); font-size:11px;">MARKET PULSE · GENERATED 2026-07-01</p>
+  </div>
+</footer>
+
+<script>
+/* ---------------- data ---------------- */
+const quotes = [
+  {name:"S&P 500", px:"7,483.23", chg:"-16.13 (-0.22%)", dir:"d", note:"Profit-taking in semis; 32 stocks hit 52-wk highs"},
+  {name:"Dow Jones", px:"52,305.24", chg:"-13.96 (-0.03%)", dir:"d", note:"New intraday record 52,742 before fading"},
+  {name:"Nasdaq", px:"26,040.03", chg:"-173.69 (-0.66%)", dir:"d", note:"Chipmakers sold off after 80%+ H1 run"},
+  {name:"Russell 2000", px:"3,012.59", chg:"-11.78 (-0.39%)", dir:"d", note:"Small caps lag rate-sensitive"},
+  {name:"VIX", px:"16.59", chg:"+0.14 (+0.85%)", dir:"u", note:"Volatility still historically calm"},
+  {name:"Gold", px:"$4,054.80", chg:"-27.60 (-0.68%)", dir:"d", note:"Briefly broke below $4,000 overnight"},
+  {name:"WTI Crude", px:"$68.00", chg:"-0.58 (-0.85%)", dir:"d", note:"Iran talks falter; Hormuz still constrained"},
+  {name:"Bitcoin", px:"$60,222", chg:"+1,698 (+2.90%)", dir:"u", note:"Reclaiming the $60K level"},
+];
+
+const scenarios = {
+  bear:{
+    lvl:"6,900", pct:"−7.8% from today", color:"#C0443A",
+    title:"Bear case — the AI trade cracks",
+    body:"A Fed rate hike lands as inflation stays above 4%, oil pushes back toward $100 on renewed Hormuz disruption, and hyperscalers signal capex discipline — kneecapping the semiconductor earnings story that drives half the index's profit growth. With the CAPE near record highs, there's little valuation cushion when the narrative wobbles.",
+    list:["Trigger: Fed hikes + hot CPI prints","Amplifier: AI capex guidance cuts (semis are the crowded trade)","History: mid-term years average ~18% intra-year drawdowns","Roughly in line with drawdown risk flagged by cautious strategists (BofA at 7,100 was the low Street target)"]
+  },
+  base:{
+    lvl:"7,850", pct:"+4.9% from today", color:"#D98E1F",
+    title:"Base case — earnings carry the load",
+    body:"The Street's median target. Earnings deliver the ~23–25% growth analysts expect, the Fed holds rates steady despite sticky inflation, and the AI buildout continues without a blow-up. Multiples stay flat near 21–22× — so all the return comes from profits, not re-rating. Choppy but grinding higher, with leadership slowly broadening beyond the megacaps.",
+    list:["Median of 19 Wall Street year-end targets: 7,850","Goldman: EPS $340 in 2026 (+24%), flat ~21× multiple","Fed on hold; jobs data cools just enough to prevent a hike","AI beneficiaries still ≈ half of index earnings growth"]
+  },
+  bull:{
+    lvl:"8,300", pct:"+10.9% from today", color:"#0E7A4E",
+    title:"Bull case — the melt-up",
+    body:"Earnings keep blowing past estimates (84% of companies beat in Q1), inflation rolls over as oil normalizes, and a monster IPO pipeline — SpaceX, OpenAI, Anthropic, an estimated $3T+ in new market cap — pulls fresh money into equities. Capital Economics' 8,000 target gets exceeded as valuations stretch further before any reckoning.",
+    list:["Capital Economics: 8,000 'before the bubble, if there is one, bursts'","Hyperscaler capex has beaten consensus 3 years running","Q1 saw the strongest median earnings growth in a decade","Risk inside the reward: melt-ups end badly — this is the most fragile path"]
+  }
+};
+
+/* ---------------- ticker ---------------- */
+const t = document.getElementById("tickerTrack");
+const items = quotes.map(q=>`<span>${q.name} <b class="${q.dir}">${q.px} ${q.chg.split(" ")[1]||q.chg}</b></span>`).join("");
+t.innerHTML = items + items;
+
+/* ---------------- quote board ---------------- */
+document.getElementById("board").innerHTML = quotes.map(q=>`
+  <div class="q">
+    <div class="name">${q.name}</div>
+    <div class="px">${q.px}</div>
+    <div class="chg ${q.dir}">${q.chg}</div>
+    <div class="note">${q.note}</div>
+  </div>`).join("");
+
+/* ---------------- fan chart ---------------- */
+const svg = document.getElementById("fan");
+const W=900,H=380,padL=64,padR=80,padT=26,padB=44;
+const months=["JUL","AUG","SEP","OCT","NOV","DEC"];
+const yMin=6400,yMax=8600;
+const x=i=>padL+(W-padL-padR)*(i/5);
+const y=v=>padT+(H-padT-padB)*(1-(v-yMin)/(yMax-yMin));
+const start=7483;
+// gently curved monthly paths per scenario
+const paths={
+  bear:[start,7350,7080,6820,6700,6900],
+  base:[start,7560,7480,7620,7740,7850],
+  bull:[start,7700,7860,8050,8180,8300]
+};
+function line(pts){return pts.map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join(" ");}
+
+let g="";
+// gridlines + y labels
+for(let v=6500;v<=8500;v+=500){
+  g+=`<line x1="${padL}" y1="${y(v)}" x2="${W-padR}" y2="${y(v)}" stroke="#D4DCD8" stroke-width="1"/>`;
+  g+=`<text x="${padL-10}" y="${y(v)+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#4A5A63">${v.toLocaleString()}</text>`;
+}
+// x labels
+months.forEach((m,i)=>{ g+=`<text x="${x(i)}" y="${H-16}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#4A5A63">${m}</text>`; });
+// uncertainty cone (bear→bull area)
+const cone = paths.bull.map((v,i)=>`${x(i)},${y(v)}`).join(" ")+" "+paths.bear.slice().reverse().map((v,i)=>`${x(5-i)},${y(v)}`).join(" ");
+g+=`<polygon points="${cone}" fill="#DCE6E1" opacity="0.55"/>`;
+// scenario lines
+const cols={bear:"#C0443A",base:"#D98E1F",bull:"#0E7A4E"};
+for(const s of ["bear","base","bull"]){
+  g+=`<path id="ln-${s}" d="${line(paths[s])}" fill="none" stroke="${cols[s]}" stroke-width="2.5" stroke-dasharray="${s==='base'?'':'6 5'}" opacity="0.45"/>`;
+  const endV=paths[s][5];
+  g+=`<circle id="pt-${s}" cx="${x(5)}" cy="${y(endV)}" r="5" fill="${cols[s]}" opacity="0.45"/>`;
+  g+=`<text id="tx-${s}" x="${x(5)+12}" y="${y(endV)+4}" font-family="IBM Plex Mono" font-size="13" font-weight="600" fill="${cols[s]}" opacity="0.45">${endV.toLocaleString()}</text>`;
+}
+// today marker
+g+=`<circle cx="${x(0)}" cy="${y(start)}" r="5" fill="#16232B"/>`;
+g+=`<text x="${x(0)}" y="${y(start)-14}" text-anchor="start" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="#16232B">TODAY 7,483</text>`;
+svg.innerHTML=g;
+
+/* ---------------- interactivity ---------------- */
+function setScenario(s){
+  const d=scenarios[s];
+  document.getElementById("scnLvl").textContent=d.lvl;
+  document.getElementById("scnLvl").style.color=d.color;
+  document.getElementById("scnPct").textContent=d.pct;
+  document.getElementById("scnTitle").textContent=d.title;
+  document.getElementById("scnBody").textContent=d.body;
+  document.getElementById("scnList").innerHTML=d.list.map(li=>`<li>${li}</li>`).join("");
+  document.querySelectorAll(".scn-btn").forEach(b=>{
+    const on=b.dataset.s===s;
+    b.classList.toggle("active",on);
+    b.setAttribute("aria-selected",on);
+  });
+  for(const k of ["bear","base","bull"]){
+    const on=k===s;
+    document.getElementById("ln-"+k).style.opacity=on?1:0.28;
+    document.getElementById("ln-"+k).style.strokeWidth=on?3.5:2;
+    document.getElementById("pt-"+k).style.opacity=on?1:0.28;
+    document.getElementById("tx-"+k).style.opacity=on?1:0.28;
+  }
+}
+document.querySelectorAll(".scn-btn").forEach(b=>b.addEventListener("click",()=>setScenario(b.dataset.s)));
+setScenario("base");
+
+/* ---------------- LIVE DATA ---------------- */
+/* Quotes come from this site's own backend (/api/quotes, /api/history),
+   which relays and caches market data server-side. If the API is
+   unreachable (e.g. the file is opened directly from disk), the page
+   keeps the July 1, 2026 snapshot and says so. */
+const SYMBOLS = [
+  {y:"^GSPC", i:0, fmt:v=>v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})},
+  {y:"^DJI",  i:1, fmt:v=>v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})},
+  {y:"^IXIC", i:2, fmt:v=>v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})},
+  {y:"^RUT",  i:3, fmt:v=>v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})},
+  {y:"^VIX",  i:4, fmt:v=>v.toFixed(2)},
+  {y:"GC=F",  i:5, fmt:v=>"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})},
+  {y:"CL=F",  i:6, fmt:v=>"$"+v.toFixed(2)},
+  {y:"BTC-USD",i:7, fmt:v=>"$"+Math.round(v).toLocaleString()},
+];
+async function fetchJSON(url){
+  try{
+    const r = await fetch(url, {signal: AbortSignal.timeout(9000)});
+    if(r.ok) return await r.json();
+  }catch(e){/* fall through to snapshot */}
+  return null;
+}
+function setBadge(state, text){
+  const b=document.getElementById("liveBadge");
+  b.className="live-badge "+state;
+  b.textContent=text;
+  document.getElementById("statusDot").style.background = state==="live" ? "var(--up)" : "var(--amber)";
+}
+async function refreshQuotes(){
+  setBadge("snap","LOADING…");
+  const data = await fetchJSON("/api/quotes");
+  let ok=0;
+  const cards=document.querySelectorAll("#board .q");
+  if(data && !data.error){
+    for(const s of SYMBOLS){
+      const q=data[s.y];
+      if(!q || q.price==null) continue;
+      const px=q.price, prev=q.prevClose||px;
+      const chg=px-prev, pct=prev?(chg/prev*100):0, dir=chg>=0?"u":"d";
+      const card=cards[s.i];
+      card.querySelector(".px").textContent=s.fmt(px);
+      const c=card.querySelector(".chg");
+      c.textContent=`${chg>=0?"+":""}${chg.toFixed(2)} (${chg>=0?"+":""}${pct.toFixed(2)}%)`;
+      c.className="chg "+dir;
+      if(s.y==="^VIX"){
+        document.getElementById("vixVal").textContent=px.toFixed(1);
+        document.getElementById("vixFill").style.width=Math.min(100,Math.max(0,(px-10)/80*100*4))+"%";
+      }
+      ok++;
+    }
+  }
+  if(ok>0){
+    const now=new Date();
+    setBadge("live","LIVE · "+ok+"/8");
+    document.getElementById("asofText").textContent="UPDATED "+now.toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}).toUpperCase()+" · DATA MAY BE DELAYED";
+  } else {
+    setBadge("snap","SNAPSHOT · JUL 1 CLOSE");
+  }
+}
+/* recompute RSI(14), 50/200-DMA and MACD from 1 year of daily closes */
+async function refreshIndicators(){
+  const data = await fetchJSON("/api/history");
+  const closes = data?.closes;
+  if(!closes || closes.length<210) return; // keep snapshot values
+  const px=closes[closes.length-1];
+  const sma=n=>closes.slice(-n).reduce((a,b)=>a+b,0)/n;
+  const sma50=sma(50), sma200=sma(200);
+  // Wilder RSI(14)
+  let g=0,l=0;
+  for(let i=closes.length-15;i<closes.length-1;i++){const d=closes[i+1]-closes[i]; d>=0?g+=d:l-=d;}
+  let ag=g/14, al=l/14;
+  const rsi = al===0?100:100-100/(1+ag/al);
+  // MACD 12/26
+  const ema=(n)=>{const k=2/(n+1); let e=closes[0]; for(let i=1;i<closes.length;i++) e=closes[i]*k+e*(1-k); return e;};
+  const macd=ema(12)-ema(26);
+  const hi=Math.max(...closes.slice(-252));
+  // paint
+  document.getElementById("rsiVal").textContent=rsi.toFixed(1);
+  document.getElementById("rsiFill").style.width=Math.min(100,Math.max(0,rsi))+"%";
+  const rs=document.getElementById("rsiSig");
+  if(rsi>=70){rs.textContent="OVERBOUGHT · STRETCHED";rs.className="sig neg";}
+  else if(rsi<=30){rs.textContent="OVERSOLD · WASHED OUT";rs.className="sig pos";}
+  else if(rsi>=50){rs.textContent="BULLISH · NOT OVERBOUGHT";rs.className="sig pos";}
+  else{rs.textContent="SOFT MOMENTUM";rs.className="sig neu";}
+  document.getElementById("maVal").textContent=(px>=sma200?"+":"")+((px/sma200-1)*100).toFixed(1)+"%";
+  const ms=document.getElementById("maSig");
+  const a50=px>=sma50, a200=px>=sma200;
+  ms.textContent=a50&&a200?"ABOVE 50-DMA & 200-DMA":a200?"BELOW 50-DMA · ABOVE 200-DMA":"BELOW 200-DMA · TREND AT RISK";
+  ms.className="sig "+(a50&&a200?"pos":a200?"neu":"neg");
+  document.getElementById("maText").textContent=`Price (${Math.round(px).toLocaleString()}) vs 50-day (${Math.round(sma50).toLocaleString()}) and 200-day (${Math.round(sma200).toLocaleString()}) averages. `+(a50&&a200?"Long-term uptrend structure intact; the 50-DMA is first support on any pullback.":"Trend structure weakening — watch the moving averages as resistance overhead.");
+  document.getElementById("macdVal").textContent=(macd>=0?"+":"")+macd.toFixed(1);
+  const mc=document.getElementById("macdSig");
+  mc.textContent=macd>=0?"POSITIVE MOMENTUM":"NEGATIVE MOMENTUM";
+  mc.className="sig "+(macd>=0?"pos":"neg");
+  const off=(px/hi-1)*100;
+  document.getElementById("hiVal").textContent=(off>=0?"+":"")+off.toFixed(1)+"%";
+  document.getElementById("hiText").textContent=`The index is ${Math.abs(off).toFixed(1)}% ${off>=0?"above":"below"} its trailing 52-week high of ${Math.round(hi).toLocaleString()}. `+(off>-3?"Shallow distance from highs is constructive — until support breaks.":off>-10?"A normal pullback zone; watch whether the 50-DMA holds.":"Correction territory — breadth and the 200-DMA now matter most.");
+}
+document.getElementById("refreshBtn").addEventListener("click",()=>{refreshQuotes();refreshIndicators();});
+refreshQuotes();
+refreshIndicators();
+setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
+</script>
+</body>
+</html>
