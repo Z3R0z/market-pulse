@@ -26,7 +26,7 @@
   body{background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.55;}
 
   /* ---------- ticker ---------- */
-  .ticker{background:var(--ink); color:#E8EEEA; overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:3px solid var(--amber);}
+  .ticker{position:sticky; top:0; z-index:50; background:var(--ink); color:#E8EEEA; overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:3px solid var(--amber); box-shadow:0 2px 8px rgba(22,35,43,.15);}
   .ticker-track{display:inline-block; animation:scroll 42s linear infinite;}
   .ticker span{margin:0 26px;}
   .ticker .u{color:#5FD79E;} .ticker .d{color:#F08A80;}
