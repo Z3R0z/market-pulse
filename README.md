@@ -1,66 +1,33 @@
-# Market Pulse — web service version
+# Market Pulse
 
-A small Node/Express server that serves the dashboard AND relays live
-market data through its own API (/api/quotes, /api/history). Because the
-data fetching happens server-side, there are no CORS proxies, nothing to
-steal from the page source, and responses are cached (quotes 60s,
-history 10 min) so the data source is never hammered.
+**Live demo:** https://market-analyzer-rpcg.onrender.com *(free tier — first load after idle takes ~30s to wake)*
 
-## Files
+A live U.S. market dashboard with post-market indicator analysis. Node/Express backend relays Yahoo Finance data server-side and renders bear/base/bull scenario projections as an interactive SVG fan chart.
 
-  server.js           the backend (Express, ~90 lines)
-  package.json        dependencies (just express)
-  render.yaml         Render config (Web Service, free plan)
-  public/index.html   the dashboard
+![Market Pulse dashboard](docs/hero.png)
 
-## Deploy to Render (3 steps)
+## How it works
 
-1. github.com -> New repository -> Create. Upload ALL files from this
-   zip, keeping the structure (public/index.html must stay inside the
-   public folder). Easiest way: on the repo page choose "uploading an
-   existing file" and drag the unzipped contents in, or use GitHub
-   Desktop / git.
-2. render.com -> New -> Web Service -> pick the repo.
-     Build Command:  npm install
-     Start Command:  npm start
-     Instance Type:  Free
-3. Create Web Service. Live in ~2 minutes at your-name.onrender.com.
+- **Server-side data relay** — the Express backend fetches market data and serves it via `/api/quotes` and `/api/history`, so there are no CORS proxies and no API keys exposed in page source
+- **Response caching** — quotes cached 60s, history 10min, with a capped in-memory cache so arbitrary symbol lookups can't grow memory unbounded
+- **Graceful degradation** — live prices via Finnhub when a key is present; falls back to delayed Yahoo closes (with a DELAYED badge) when it isn't, and to a dated snapshot with auto-retry if the upstream doesn't answer
+- **Zero-dependency frontend** — single-file dashboard, SVG charts drawn directly, no framework
+
+![Scenario fan chart](docs/fanchart.png)
+
+## Stack
+
+Node 18+ · Express (only dependency) · Yahoo Finance chart API · optional Finnhub for real-time quotes · deployed on Render
 
 ## Run locally
 
-  npm install
-  npm start
-  open http://localhost:3000
+```bash
+npm install
+npm start        # http://localhost:3000
+```
 
-## Real-time quotes (optional)
+Optional live quotes: `FINNHUB_API_KEY=xxxx npm start`
 
-The "Analyze any stock" search shows a LIVE last price when a Finnhub API
-key is present (the free tier is real-time for U.S. stocks/ETFs). Without
-a key it still works — the price just carries a DELAYED badge and uses the
-latest daily close.
+## Deployment
 
-  1. Get a free key at finnhub.io (Dashboard -> API key).
-  2. Local:
-       macOS/Linux:  FINNHUB_API_KEY=xxxx npm start
-       Windows PS:   $env:FINNHUB_API_KEY="xxxx"; npm start
-  3. Render: Dashboard -> your service -> Environment -> add
-       FINNHUB_API_KEY = xxxx   (never commit the key to the repo)
-
-History and the trend/momentum indicators always come from Yahoo (daily
-closes); the key only powers the live price, polled every ~4s. Free
-real-time covers U.S. stocks/ETFs — not indices or futures — so the top
-quote board stays on the delayed Yahoo feed.
-
-## Good to know
-
-- FREE PLAN SLEEP: Render free web services spin down after ~15 min of
-  no traffic. The first visit afterward takes 30-60s to wake. Upgrade
-  the instance or use a free uptime pinger if that bothers you.
-- If quotes show "SNAPSHOT": the upstream data source didn't answer.
-  The page falls back to the July 1, 2026 close and retries every 2 min.
-  Check your-url/api/quotes to see the raw API response.
-- Data comes from Yahoo Finance's public chart endpoint (unofficial,
-  delayed). To switch to a keyed provider later (Finnhub, Twelve Data),
-  only server.js needs editing — set the key as an environment variable
-  in Render's dashboard, never in the code.
-
+Deployed as a Render Web Service (`render.yaml` included): build `npm install`, start `npm start`, free instance. Set `FINNHUB_API_KEY` in the Render dashboard environment — never in the repo. Note the free plan spins down after ~15 min idle; first visit afterward takes 30–60s.
