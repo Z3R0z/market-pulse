@@ -5,31 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Pulse — U.S. Markets Analysis & H2 2026 Outlook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#EEF2F0;
-    --panel:#FFFFFF;
-    --ink:#16232B;
-    --ink-soft:#4A5A63;
-    --line:#D4DCD8;
-    --up:#0E7A4E;
-    --down:#C0443A;
-    --amber:#D98E1F;
-    --band:#DCE6E1;
-    --mono:'IBM Plex Mono', ui-monospace, monospace;
-    --sans:'IBM Plex Sans', system-ui, sans-serif;
-    --cond:'IBM Plex Sans Condensed', system-ui, sans-serif;
+    /* Axiom surfaces */
+    --void:#000000;
+    --carbon:#111111;
+    --graphite:#191919;
+    --iron:#202020;
+    --slate:#3a3a3a;
+    --steel:#606060;
+    --ash:#7e7e7e;
+    --fog:#b4b4b4;
+    --paper:#eeeeee;
+    --ember:#da5c2c;
+
+    /* semantic mapping onto the old variable names (so all rules + JS refs update) */
+    --panel:var(--carbon);      /* card base */
+    --ink:var(--paper);         /* primary text */
+    --ink-soft:var(--fog);      /* secondary text */
+    --line:var(--iron);         /* hairline borders */
+    --band:var(--iron);         /* meter track */
+    --amber:var(--ember);       /* the single accent */
+    --up:#3fb950;
+    --down:#f0655a;
+
+    --mono:'BerkeleyMono','JetBrains Mono','IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    --sans:var(--mono);
+    --cond:var(--mono);
+    --inter:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
-  body{background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.55;}
+  body{background:var(--void); color:var(--paper); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased;}
 
   /* ---------- ticker ---------- */
-  .ticker{position:sticky; top:0; z-index:50; background:var(--ink); color:#E8EEEA; overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:3px solid var(--amber); box-shadow:0 2px 8px rgba(22,35,43,.15);}
+  .ticker{position:sticky; top:0; z-index:50; background:#050505; color:var(--paper); overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:2px solid var(--ember);}
   .ticker-track{display:inline-block; animation:scroll 42s linear infinite;}
   .ticker span{margin:0 26px;}
-  .ticker .u{color:#5FD79E;} .ticker .d{color:#F08A80;}
+  .ticker .u{color:var(--up);} .ticker .d{color:var(--down);}
   @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
   @media (prefers-reduced-motion: reduce){
     .ticker-track{animation:none; white-space:normal;}
@@ -39,110 +54,114 @@
   .wrap{max-width:1080px; margin:0 auto; padding:0 22px;}
 
   /* ---------- header / hero ---------- */
-  header{padding:44px 0 12px;}
-  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft);}
-  h1{font-family:var(--cond); font-weight:700; font-size:clamp(40px,6vw,68px); line-height:1.02; letter-spacing:-0.01em; margin:10px 0 6px;}
-  .hero-sub{max-width:720px; color:var(--ink-soft); font-size:16px;}
-  .asof{font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:14px; display:flex; align-items:center; gap:8px;}
-  .dot{width:8px; height:8px; border-radius:50%; background:var(--down); display:inline-block;}
+  header{padding:48px 0 12px;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ash);}
+  .eyebrow .prompt{color:var(--ember);}
+  h1{font-family:var(--cond); font-weight:700; font-size:clamp(34px,5.4vw,56px); line-height:1.04; letter-spacing:-0.02em; margin:14px 0 8px; color:var(--paper);}
+  .hero-sub{max-width:720px; color:var(--fog); font-size:16px;}
+  .asof{font-family:var(--mono); font-size:12px; color:var(--ash); margin-top:16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--ember); display:inline-block;}
 
   /* ---------- quote board ---------- */
-  .board{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:28px 0 8px;}
-  .q{background:var(--panel); padding:16px 16px 14px;}
-  .q .name{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);}
-  .q .px{font-family:var(--mono); font-weight:600; font-size:clamp(18px,2.4vw,24px); margin-top:6px;}
+  .board{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--iron); border:1px solid var(--iron); margin:28px 0 8px;}
+  .q{background:var(--carbon); padding:16px 16px 14px;}
+  .q .name{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ash);}
+  .q .px{font-family:var(--mono); font-weight:600; font-size:clamp(18px,2.4vw,24px); margin-top:6px; color:var(--paper);}
   .q .chg{font-family:var(--mono); font-size:13px; margin-top:2px;}
   .q .chg.u{color:var(--up);} .q .chg.d{color:var(--down);}
-  .q .note{font-size:12px; color:var(--ink-soft); margin-top:6px;}
-  .board-cap{font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-bottom:40px;}
+  .q .note{font-family:var(--inter); font-size:12px; color:var(--ash); margin-top:6px; line-height:1.4;}
+  .board-cap{font-family:var(--mono); font-size:11px; color:var(--ash); margin-bottom:40px;}
 
   /* ---------- sections ---------- */
   section{padding:36px 0;}
-  .sec-head{display:flex; align-items:baseline; gap:14px; border-top:2px solid var(--ink); padding-top:14px; margin-bottom:22px;}
-  .sec-head h2{font-family:var(--cond); font-weight:700; font-size:clamp(26px,3.4vw,36px); letter-spacing:-0.01em;}
-  .sec-head .tag{font-family:var(--mono); font-size:12px; color:var(--ink-soft); letter-spacing:.1em; text-transform:uppercase;}
+  .sec-head{display:flex; align-items:baseline; gap:14px; border-top:1px solid var(--slate); padding-top:16px; margin-bottom:22px;}
+  .sec-head h2{font-family:var(--cond); font-weight:700; font-size:clamp(24px,3.4vw,34px); letter-spacing:-0.01em; color:var(--paper);}
+  .sec-head .tag{font-family:var(--mono); font-size:12px; color:var(--ash); letter-spacing:.1em; text-transform:uppercase;}
 
   .themes{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
-  .theme{background:var(--panel); border:1px solid var(--line); padding:22px;}
-  .theme h3{font-family:var(--cond); font-weight:600; font-size:22px; margin-bottom:8px;}
-  .theme p{font-size:14.5px; color:var(--ink-soft);}
-  .theme .stat{font-family:var(--mono); font-size:12.5px; color:var(--ink); background:var(--paper); display:inline-block; padding:3px 8px; margin-top:12px; border-left:3px solid var(--amber);}
+  .theme{background:var(--carbon); border:1px solid var(--iron); border-radius:2px; padding:22px;}
+  .theme h3{font-family:var(--cond); font-weight:700; font-size:20px; margin-bottom:8px; color:var(--paper);}
+  .theme p{font-size:14.5px; color:var(--fog);}
+  .theme .stat{font-family:var(--mono); font-size:12.5px; color:var(--paper); background:var(--graphite); display:inline-block; padding:4px 10px; margin-top:12px; border-left:2px solid var(--ember);}
 
   /* ---------- scenario / fan chart ---------- */
-  .scenario-wrap{background:var(--panel); border:1px solid var(--line); padding:26px;}
+  .scenario-wrap{background:var(--carbon); border:1px solid var(--iron); border-radius:2px; padding:26px;}
   .scn-buttons{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
-  .scn-btn{font-family:var(--mono); font-size:13px; letter-spacing:.06em; text-transform:uppercase; padding:9px 16px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer;}
-  .scn-btn:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
-  .scn-btn.active{background:var(--ink); color:#fff;}
+  .scn-btn{font-family:var(--mono); font-size:13px; letter-spacing:.06em; text-transform:uppercase; padding:9px 16px; border:1px solid var(--slate); border-radius:2px; background:transparent; color:var(--paper); cursor:pointer; transition:background .15s, color .15s, border-color .15s;}
+  .scn-btn:hover{border-color:var(--fog);}
+  .scn-btn:focus-visible{outline:2px solid var(--ember); outline-offset:2px;}
+  .scn-btn.active{background:var(--paper); color:var(--void); border-color:var(--paper);}
   .chart-box{width:100%; overflow-x:auto;}
   svg{display:block; width:100%; height:auto;}
-  .scn-detail{margin-top:20px; border-top:1px dashed var(--line); padding-top:18px; display:grid; grid-template-columns:200px 1fr; gap:20px;}
+  .scn-detail{margin-top:20px; border-top:1px dashed var(--slate); padding-top:18px; display:grid; grid-template-columns:200px 1fr; gap:20px;}
   .scn-num{font-family:var(--mono);}
   .scn-num .lvl{font-size:34px; font-weight:600; line-height:1.1;}
-  .scn-num .pct{font-size:15px;}
-  .scn-num .lbl{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px;}
-  .scn-text h3{font-family:var(--cond); font-size:22px; margin-bottom:6px;}
-  .scn-text p{font-size:14.5px; color:var(--ink-soft);}
-  .scn-text ul{margin:10px 0 0 18px; font-size:14px; color:var(--ink-soft);}
+  .scn-num .pct{font-size:15px; color:var(--fog);}
+  .scn-num .lbl{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ash); margin-top:4px;}
+  .scn-text h3{font-family:var(--cond); font-weight:700; font-size:20px; margin-bottom:6px; color:var(--paper);}
+  .scn-text p{font-size:14.5px; color:var(--fog);}
+  .scn-text ul{margin:10px 0 0 18px; font-size:14px; color:var(--fog);}
   .scn-text li{margin-bottom:4px;}
 
   .street{margin-top:26px;}
   .street table{width:100%; border-collapse:collapse; font-size:14px;}
-  .street th{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-align:left; color:var(--ink-soft); border-bottom:1px solid var(--ink); padding:8px 10px;}
-  .street td{padding:9px 10px; border-bottom:1px solid var(--line);}
-  .street td.mono{font-family:var(--mono);}
+  .street th{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-align:left; color:var(--ash); border-bottom:1px solid var(--slate); padding:8px 10px;}
+  .street td{padding:9px 10px; border-bottom:1px solid var(--iron); color:var(--fog);}
+  .street td.mono{font-family:var(--mono); color:var(--paper);}
 
-  .caution{margin-top:26px; background:#FBF4E4; border:1px solid #E4CE9A; padding:18px 20px; font-size:14px;}
-  .caution strong{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; display:block; margin-bottom:6px; color:#8A6414;}
+  .caution{margin-top:26px; background:var(--graphite); border:1px solid var(--iron); border-left:2px solid var(--ember); padding:18px 20px; font-size:14px; color:var(--fog);}
+  .caution strong{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; display:block; margin-bottom:6px; color:var(--ember);}
 
   /* ---------- live badge ---------- */
-  .live-badge{font-family:var(--mono); font-size:11px; letter-spacing:.1em; padding:3px 9px; border:1px solid var(--line); background:var(--panel);}
+  .live-badge{font-family:var(--mono); font-size:11px; letter-spacing:.1em; padding:3px 9px; border:1px solid var(--iron); border-radius:2px; background:var(--carbon); color:var(--fog);}
   .live-badge.live{color:var(--up); border-color:var(--up);}
-  .live-badge.snap{color:var(--amber); border-color:var(--amber);}
-  .refresh-btn{font-family:var(--mono); font-size:11px; letter-spacing:.08em; padding:3px 10px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer;}
-  .refresh-btn:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
+  .live-badge.snap{color:var(--ember); border-color:var(--ember);}
+  .refresh-btn{font-family:var(--mono); font-size:11px; letter-spacing:.08em; padding:3px 10px; border:1px solid var(--slate); border-radius:2px; background:transparent; color:var(--paper); cursor:pointer; transition:border-color .15s;}
+  .refresh-btn:hover{border-color:var(--fog);}
+  .refresh-btn:focus-visible{outline:2px solid var(--ember); outline-offset:2px;}
 
   /* ---------- technical read ---------- */
   .tech-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
-  .ind{background:var(--panel); border:1px solid var(--line); padding:20px;}
-  .ind .k{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);}
-  .ind .v{font-family:var(--mono); font-weight:600; font-size:30px; margin:6px 0 2px;}
+  .ind{background:var(--carbon); border:1px solid var(--iron); border-radius:2px; padding:20px;}
+  .ind .k{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ash);}
+  .ind .v{font-family:var(--mono); font-weight:600; font-size:30px; margin:6px 0 2px; color:var(--paper);}
   .ind .sig{font-family:var(--mono); font-size:12px; margin-bottom:10px;}
-  .sig.pos{color:var(--up);} .sig.neg{color:var(--down);} .sig.neu{color:var(--amber);}
-  .ind p{font-size:13px; color:var(--ink-soft);}
-  .meter{position:relative; height:10px; background:var(--band); margin:8px 0 6px;}
-  .meter .fill{position:absolute; top:0; left:0; height:100%; background:var(--ink); transition:width .5s ease;}
-  .meter .mark{position:absolute; top:-3px; width:2px; height:16px; background:var(--down); opacity:.5;}
-  .meter-lbl{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--ink-soft);}
-  .tech-read{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--ink); padding:22px; margin-top:18px;}
-  .tech-read h3{font-family:var(--cond); font-size:22px; margin-bottom:8px;}
-  .tech-read p{font-size:14.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .sig.pos{color:var(--up);} .sig.neg{color:var(--down);} .sig.neu{color:var(--ember);}
+  .ind p{font-size:13px; color:var(--fog);}
+  .meter{position:relative; height:10px; background:var(--band); border-radius:2px; overflow:hidden; margin:8px 0 6px;}
+  .meter .fill{position:absolute; top:0; left:0; height:100%; background:var(--ember); transition:width .5s ease;}
+  .meter .mark{position:absolute; top:-3px; width:2px; height:16px; background:var(--paper); opacity:.35;}
+  .meter-lbl{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--ash);}
+  .tech-read{background:var(--carbon); border:1px solid var(--iron); border-radius:2px; border-left:2px solid var(--ember); padding:22px; margin-top:18px;}
+  .tech-read h3{font-family:var(--cond); font-weight:700; font-size:20px; margin-bottom:8px; color:var(--paper);}
+  .tech-read p{font-size:14.5px; color:var(--fog); margin-bottom:10px;}
   .tech-read p:last-child{margin-bottom:0;}
+  .tech-read b{color:var(--paper);}
   .lvls{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px;}
-  .lvl-chip{font-family:var(--mono); font-size:12.5px; padding:6px 12px; border:1px dashed var(--line);}
-  .lvl-chip b{font-weight:600;}
+  .lvl-chip{font-family:var(--mono); font-size:12.5px; padding:6px 12px; border:1px dashed var(--slate); border-radius:2px; color:var(--fog);}
+  .lvl-chip b{font-weight:600; color:var(--paper);}
   .lvl-chip.res b{color:var(--down);} .lvl-chip.sup b{color:var(--up);}
 
   /* ---------- stock lookup ---------- */
   .search{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
-  .search-input{flex:1; min-width:220px; font-family:var(--mono); font-size:15px; padding:12px 14px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); letter-spacing:.04em; text-transform:uppercase;}
-  .search-input::placeholder{color:var(--ink-soft); text-transform:none; letter-spacing:0;}
-  .search-input:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
-  .search-btn{font-family:var(--mono); font-size:13px; letter-spacing:.08em; text-transform:uppercase; padding:12px 24px; border:1px solid var(--ink); background:var(--ink); color:#fff; cursor:pointer;}
-  .search-btn:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
+  .search-input{flex:1; min-width:220px; font-family:var(--mono); font-size:15px; padding:12px 14px; border:1px solid var(--slate); border-radius:2px; background:var(--carbon); color:var(--paper); letter-spacing:.04em; text-transform:uppercase;}
+  .search-input::placeholder{color:var(--ash); text-transform:none; letter-spacing:0;}
+  .search-input:focus-visible{outline:2px solid var(--ember); outline-offset:2px;}
+  .search-btn{font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.08em; text-transform:uppercase; padding:12px 24px; border:1px solid var(--ember); border-radius:2px; background:var(--ember); color:var(--paper); cursor:pointer;}
+  .search-btn:focus-visible{outline:2px solid var(--paper); outline-offset:2px;}
   .search-btn:disabled{opacity:.5; cursor:default;}
-  .search-hint{font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-bottom:6px;}
+  .search-hint{font-family:var(--mono); font-size:12px; color:var(--ash); margin-bottom:6px;}
   .search-hint.err{color:var(--down);}
-  .lookup-head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:22px 0 16px; padding-bottom:14px; border-bottom:1px solid var(--line);}
-  .lookup-name{font-family:var(--cond); font-weight:700; font-size:clamp(22px,3vw,30px); line-height:1.1;}
-  .lookup-sym{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin-top:3px;}
-  .lookup-px .px{font-family:var(--mono); font-weight:600; font-size:clamp(22px,3vw,30px); text-align:right;}
+  .lookup-head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:22px 0 16px; padding-bottom:14px; border-bottom:1px solid var(--iron);}
+  .lookup-name{font-family:var(--cond); font-weight:700; font-size:clamp(22px,3vw,30px); line-height:1.1; color:var(--paper);}
+  .lookup-sym{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ash); margin-top:3px;}
+  .lookup-px .px{font-family:var(--mono); font-weight:600; font-size:clamp(22px,3vw,30px); text-align:right; color:var(--paper);}
   .lookup-px .chg{font-family:var(--mono); font-size:14px; text-align:right; margin-top:2px;}
   .lookup-px .chg.u{color:var(--up);} .lookup-px .chg.d{color:var(--down);}
-  .chart-legend{display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:8px;}
+  .chart-legend{display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ash); margin-top:8px;}
   .chart-legend .sw{display:inline-block; width:16px; height:3px; vertical-align:middle; margin-right:6px;}
 
-  footer{border-top:2px solid var(--ink); margin-top:30px; padding:26px 0 60px; font-size:13px; color:var(--ink-soft);}
+  footer{border-top:1px solid var(--slate); margin-top:30px; padding:26px 0 60px; font-size:13px; color:var(--ash);}
   footer p{max-width:820px; margin-bottom:10px;}
 
   @media (max-width:820px){
@@ -150,6 +169,57 @@
     .themes{grid-template-columns:1fr;}
     .scn-detail{grid-template-columns:1fr;}
     .tech-grid{grid-template-columns:1fr;}
+  }
+
+  /* ============================================================
+     Aceternity-inspired effects — rebuilt in vanilla CSS/JS and
+     tuned to the Axiom dark canvas + single ember accent.
+     ============================================================ */
+
+  /* hero effect layers (spotlight + meteors) */
+  header{position:relative; overflow:hidden;}
+  header > *:not(.fx){position:relative; z-index:1;}
+  .fx{position:absolute; inset:0; z-index:0; pointer-events:none;}
+
+  /* Spotlight — cursor-following ember/paper radial glow */
+  .spotlight{background:radial-gradient(560px circle at var(--sx,50%) var(--sy,25%), rgba(218,92,44,0.12), rgba(238,238,238,0.045) 42%, transparent 70%); opacity:0; transition:opacity .4s ease;}
+  header:hover .spotlight{opacity:1;}
+
+  /* Meteors — monochrome streaks echoing the "streaming data" motif */
+  .meteor{position:absolute; top:-20px; width:2px; height:2px; border-radius:9999px; background:var(--fog); box-shadow:0 0 0 1px rgba(180,180,180,.08); animation:meteor linear infinite;}
+  .meteor::before{content:""; position:absolute; top:50%; transform:translateY(-50%); width:72px; height:1px; background:linear-gradient(90deg,var(--fog),transparent);}
+  .meteor.ember{background:var(--ember);}
+  .meteor.ember::before{background:linear-gradient(90deg,var(--ember),transparent);}
+  @keyframes meteor{
+    0%{transform:rotate(215deg) translateX(0); opacity:0;}
+    8%{opacity:1;}
+    88%{opacity:1;}
+    100%{transform:rotate(215deg) translateX(-820px); opacity:0;}
+  }
+
+  /* Moving Border — ember gradient tracing the primary CTA */
+  @property --mb{syntax:'<angle>'; initial-value:0deg; inherits:false;}
+  .search-btn{isolation:isolate;}
+  .search-btn::after{content:""; position:absolute; inset:-2px; border-radius:3px; padding:2px;
+    background:conic-gradient(from var(--mb), transparent 0deg, #ffb48c 40deg, var(--ember) 96deg, transparent 170deg, transparent 360deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    animation:mbspin 2.6s linear infinite; z-index:-1; pointer-events:none;}
+  @keyframes mbspin{to{--mb:360deg;}}
+
+  /* Card Hover Glow — spotlight-on-hover + lift for quote/theme/indicator cards */
+  .q, .theme, .ind{position:relative; overflow:hidden; transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;}
+  .q::after, .theme::after, .ind::after{content:""; position:absolute; inset:0; border-radius:inherit;
+    background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(218,92,44,0.16), transparent 62%);
+    opacity:0; transition:opacity .25s ease; pointer-events:none;}
+  .q:hover, .theme:hover, .ind:hover{transform:translateY(-2px); border-color:var(--slate); box-shadow:0 0 0 1px rgba(218,92,44,0.22), 0 10px 26px rgba(0,0,0,0.55);}
+  .q:hover::after, .theme:hover::after, .ind:hover::after{opacity:1;}
+
+  @media (prefers-reduced-motion: reduce){
+    .meteor{display:none;}
+    .search-btn::after{animation:none; background:var(--ember);}
+    .q:hover, .theme:hover, .ind:hover{transform:none;}
   }
 </style>
 </head>
@@ -160,7 +230,9 @@
 </div>
 
 <header class="wrap">
-  <div class="eyebrow">Market Pulse · U.S. Equities</div>
+  <div class="fx spotlight" aria-hidden="true"></div>
+  <div class="fx meteors" id="meteors" aria-hidden="true"></div>
+  <div class="eyebrow"><span class="prompt">~/</span> Market Pulse · U.S. Equities</div>
   <h1>Records above,<br>rate risk below.</h1>
   <p class="hero-sub">The Dow touched a fresh all-time high on July&nbsp;1 before fading, while the Nasdaq slipped as investors took profits in semiconductors — the stocks that powered an 80%+ first-half surge. Underneath the rally: 4%+ inflation, a Fed debating hikes rather than cuts, and an AI capex boom carrying roughly half of all S&amp;P 500 earnings growth.</p>
   <div class="asof"><span class="dot" id="statusDot"></span> <span id="asofText">CLOSE · WED JUL 01 2026 · NYSE / NASDAQ</span> <span class="live-badge snap" id="liveBadge">SNAPSHOT</span> <button class="refresh-btn" id="refreshBtn" type="button">↻ REFRESH</button></div>
@@ -197,8 +269,8 @@
           <svg id="stockChart" viewBox="0 0 900 360" role="img" aria-label="Daily closing-price chart for the selected stock"></svg>
         </div>
         <div class="chart-legend">
-          <span><span class="sw" id="luLineSw" style="background:#16232B"></span>Daily close</span>
-          <span><span class="sw" style="background:#D98E1F"></span>50-day average</span>
+          <span><span class="sw" id="luLineSw" style="background:#eeeeee"></span>Daily close</span>
+          <span><span class="sw" style="background:#da5c2c"></span>50-day average</span>
         </div>
 
         <div class="tech-grid" id="luGrid" style="margin-top:22px;"></div>
@@ -366,19 +438,19 @@ const quotes = [
 
 const scenarios = {
   bear:{
-    lvl:"6,900", pct:"−7.8% from today", color:"#C0443A",
+    lvl:"6,900", pct:"−7.8% from today", color:"#f0655a",
     title:"Bear case — the AI trade cracks",
     body:"A Fed rate hike lands as inflation stays above 4%, oil pushes back toward $100 on renewed Hormuz disruption, and hyperscalers signal capex discipline — kneecapping the semiconductor earnings story that drives half the index's profit growth. With the CAPE near record highs, there's little valuation cushion when the narrative wobbles.",
     list:["Trigger: Fed hikes + hot CPI prints","Amplifier: AI capex guidance cuts (semis are the crowded trade)","History: mid-term years average ~18% intra-year drawdowns","Roughly in line with drawdown risk flagged by cautious strategists (BofA at 7,100 was the low Street target)"]
   },
   base:{
-    lvl:"7,850", pct:"+4.9% from today", color:"#D98E1F",
+    lvl:"7,850", pct:"+4.9% from today", color:"#da5c2c",
     title:"Base case — earnings carry the load",
     body:"The Street's median target. Earnings deliver the ~23–25% growth analysts expect, the Fed holds rates steady despite sticky inflation, and the AI buildout continues without a blow-up. Multiples stay flat near 21–22× — so all the return comes from profits, not re-rating. Choppy but grinding higher, with leadership slowly broadening beyond the megacaps.",
     list:["Median of 19 Wall Street year-end targets: 7,850","Goldman: EPS $340 in 2026 (+24%), flat ~21× multiple","Fed on hold; jobs data cools just enough to prevent a hike","AI beneficiaries still ≈ half of index earnings growth"]
   },
   bull:{
-    lvl:"8,300", pct:"+10.9% from today", color:"#0E7A4E",
+    lvl:"8,300", pct:"+10.9% from today", color:"#3fb950",
     title:"Bull case — the melt-up",
     body:"Earnings keep blowing past estimates (84% of companies beat in Q1), inflation rolls over as oil normalizes, and a monster IPO pipeline — SpaceX, OpenAI, Anthropic, an estimated $3T+ in new market cap — pulls fresh money into equities. Capital Economics' 8,000 target gets exceeded as valuations stretch further before any reckoning.",
     list:["Capital Economics: 8,000 'before the bubble, if there is one, bursts'","Hyperscaler capex has beaten consensus 3 years running","Q1 saw the strongest median earnings growth in a decade","Risk inside the reward: melt-ups end badly — this is the most fragile path"]
@@ -418,16 +490,16 @@ function line(pts){return pts.map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join(" "
 let g="";
 // gridlines + y labels
 for(let v=6500;v<=8500;v+=500){
-  g+=`<line x1="${padL}" y1="${y(v)}" x2="${W-padR}" y2="${y(v)}" stroke="#D4DCD8" stroke-width="1"/>`;
-  g+=`<text x="${padL-10}" y="${y(v)+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#4A5A63">${v.toLocaleString()}</text>`;
+  g+=`<line x1="${padL}" y1="${y(v)}" x2="${W-padR}" y2="${y(v)}" stroke="#202020" stroke-width="1"/>`;
+  g+=`<text x="${padL-10}" y="${y(v)+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#606060">${v.toLocaleString()}</text>`;
 }
 // x labels
-months.forEach((m,i)=>{ g+=`<text x="${x(i)}" y="${H-16}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#4A5A63">${m}</text>`; });
+months.forEach((m,i)=>{ g+=`<text x="${x(i)}" y="${H-16}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#606060">${m}</text>`; });
 // uncertainty cone (bear→bull area)
 const cone = paths.bull.map((v,i)=>`${x(i)},${y(v)}`).join(" ")+" "+paths.bear.slice().reverse().map((v,i)=>`${x(5-i)},${y(v)}`).join(" ");
-g+=`<polygon points="${cone}" fill="#DCE6E1" opacity="0.55"/>`;
+g+=`<polygon points="${cone}" fill="#3a3a3a" opacity="0.28"/>`;
 // scenario lines
-const cols={bear:"#C0443A",base:"#D98E1F",bull:"#0E7A4E"};
+const cols={bear:"#f0655a",base:"#da5c2c",bull:"#3fb950"};
 for(const s of ["bear","base","bull"]){
   g+=`<path id="ln-${s}" d="${line(paths[s])}" fill="none" stroke="${cols[s]}" stroke-width="2.5" stroke-dasharray="${s==='base'?'':'6 5'}" opacity="0.45"/>`;
   const endV=paths[s][5];
@@ -435,8 +507,8 @@ for(const s of ["bear","base","bull"]){
   g+=`<text id="tx-${s}" x="${x(5)+12}" y="${y(endV)+4}" font-family="IBM Plex Mono" font-size="13" font-weight="600" fill="${cols[s]}" opacity="0.45">${endV.toLocaleString()}</text>`;
 }
 // today marker
-g+=`<circle cx="${x(0)}" cy="${y(start)}" r="5" fill="#16232B"/>`;
-g+=`<text x="${x(0)}" y="${y(start)-14}" text-anchor="start" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="#16232B">TODAY 7,483</text>`;
+g+=`<circle cx="${x(0)}" cy="${y(start)}" r="5" fill="#eeeeee"/>`;
+g+=`<text x="${x(0)}" y="${y(start)-14}" text-anchor="start" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="#eeeeee">TODAY 7,483</text>`;
 svg.innerHTML=g;
 
 /* ---------------- interactivity ---------------- */
@@ -490,7 +562,7 @@ function setBadge(state, text){
   const b=document.getElementById("liveBadge");
   b.className="live-badge "+state;
   b.textContent=text;
-  document.getElementById("statusDot").style.background = state==="live" ? "var(--up)" : "var(--amber)";
+  document.getElementById("statusDot").style.background = state==="live" ? "var(--up)" : "var(--ember)";
 }
 async function refreshQuotes(){
   setBadge("snap","LOADING…");
@@ -630,25 +702,25 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
     const X=i=>padL+(W-padL-padR)*(n<=1?0:i/(n-1));
     const Y=v=>padT+(H-padT-padB)*(1-(v-lo)/(hi-lo));
     const up = closes[n-1] >= closes[0];
-    const col = up ? "#0E7A4E" : "#C0443A";
+    const col = up ? "#3fb950" : "#f0655a";
     let s="";
     for(let i=0;i<=4;i++){                 // gridlines + price labels
       const v=lo+(hi-lo)*i/4, yy=Y(v);
-      s+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#D4DCD8" stroke-width="1"/>`;
-      s+=`<text x="${padL-10}" y="${yy+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#4A5A63">${fmt(v)}</text>`;
+      s+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#202020" stroke-width="1"/>`;
+      s+=`<text x="${padL-10}" y="${yy+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#606060">${fmt(v)}</text>`;
     }
     const ticks=Math.min(6,n);             // date labels
     for(let i=0;i<ticks;i++){
       const idx=Math.round((n-1)*i/(ticks-1||1));
       const d=new Date((ts[idx]||0)*1000);
       const lbl=d.toLocaleDateString("en-US",{month:"short",year:"2-digit"}).toUpperCase();
-      s+=`<text x="${X(idx)}" y="${H-14}" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#4A5A63">${lbl}</text>`;
+      s+=`<text x="${X(idx)}" y="${H-14}" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#606060">${lbl}</text>`;
     }
     const pts=closes.map((v,i)=>`${X(i)},${Y(v)}`).join(" ");
     s+=`<polygon points="${X(0)},${Y(lo)} ${pts} ${X(n-1)},${Y(lo)}" fill="${col}" opacity="0.10"/>`;
     s+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2"/>`;
     const maPts=ma50.map((v,i)=> v==null?null:`${X(i)},${Y(v)}`).filter(Boolean).join(" ");
-    if(maPts) s+=`<polyline points="${maPts}" fill="none" stroke="#D98E1F" stroke-width="1.6" stroke-dasharray="6 5"/>`;
+    if(maPts) s+=`<polyline points="${maPts}" fill="none" stroke="#da5c2c" stroke-width="1.6" stroke-dasharray="6 5"/>`;
     s+=`<circle cx="${X(n-1)}" cy="${Y(closes[n-1])}" r="4.5" fill="${col}"/>`;
     s+=`<text x="${X(n-1)-8}" y="${Y(closes[n-1])-10}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="${col}">${fmt(closes[n-1])}</text>`;
     CHART.innerHTML=s;
@@ -844,6 +916,49 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
   form.addEventListener("submit", e=>{ e.preventDefault(); analyze(input.value, false); });
   input.value="AAPL";
   analyze("AAPL", true); // populate with an example on load
+})();
+</script>
+
+<script>
+/* ---------------- ACETERNITY-STYLE EFFECTS (vanilla) ----------------
+   Spotlight, meteors and card-hover glow — no React/Framer needed.
+   All motion respects prefers-reduced-motion. */
+(function(){
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Hero spotlight follows the cursor across the header
+  const header = document.querySelector("header");
+  const spot   = document.querySelector(".spotlight");
+  if(header && spot && !reduce){
+    header.addEventListener("mousemove", e=>{
+      const r = header.getBoundingClientRect();
+      spot.style.setProperty("--sx", ((e.clientX-r.left)/r.width*100).toFixed(1)+"%");
+      spot.style.setProperty("--sy", ((e.clientY-r.top)/r.height*100).toFixed(1)+"%");
+    });
+  }
+
+  // Meteors — random streaks seeded behind the hero copy
+  const mc = document.getElementById("meteors");
+  if(mc && !reduce){
+    for(let i=0;i<14;i++){
+      const m=document.createElement("span");
+      m.className="meteor"+(Math.random()<0.22?" ember":"");
+      m.style.left=(Math.random()*120-10).toFixed(1)+"%";
+      m.style.top=(Math.random()*40-20).toFixed(0)+"px";
+      m.style.animationDelay=(Math.random()*8).toFixed(2)+"s";
+      m.style.animationDuration=(4+Math.random()*5).toFixed(2)+"s";
+      mc.appendChild(m);
+    }
+  }
+
+  // Card hover glow — delegated so dynamically-built cards are covered too
+  document.addEventListener("mousemove", e=>{
+    const c = e.target.closest && e.target.closest(".q, .theme, .ind");
+    if(!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty("--mx", (e.clientX-r.left)+"px");
+    c.style.setProperty("--my", (e.clientY-r.top)+"px");
+  });
 })();
 </script>
 </body>
