@@ -64,6 +64,3 @@ quote board stays on the delayed Yahoo feed.
   only server.js needs editing — set the key as an environment variable
   in Render's dashboard, never in the code.
 
-## Disclaimer
-
-Informational/educational only — not financial advice.
