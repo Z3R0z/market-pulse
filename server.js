@@ -4,6 +4,7 @@
 
 const express = require("express");
 const path = require("path");
+const { runMonteCarloProjection } = require("./lib/monteCarlo");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -135,6 +136,37 @@ app.get("/api/quote", async (req, res) => {
     res.json(data);
   } catch (e) {
     res.status(502).json({ error: String(e.message || e) });
+  }
+});
+
+// GET /api/projections?symbol=AAPL -> Monte Carlo bear/base/bull paths (30 days, 1000 sims)
+app.get("/api/projections", async (req, res) => {
+  const sym = String(req.query.symbol || "^GSPC").trim().toUpperCase();
+  if (!SYMBOL_RE.test(sym)) return res.status(400).json({ error: "invalid symbol" });
+  try {
+    const data = await cached("proj:" + sym, 300_000, async () => {
+      const c = await fetchChart(sym, "1y");
+      const rawCloses = c.indicators?.quote?.[0]?.close || [];
+      const closes = rawCloses.filter((v) => v != null);
+      if (closes.length < 30) throw new Error("not enough price history for projections");
+      const mc = runMonteCarloProjection(closes);
+      return {
+        symbol: c.meta?.symbol || sym,
+        startPrice: mc.startPrice,
+        mu: mc.mu,
+        sigma: mc.sigma,
+        days: mc.days,
+        simulations: mc.simulations,
+        bear: mc.bear,
+        base: mc.base,
+        bull: mc.bull,
+      };
+    });
+    res.json(data);
+  } catch (e) {
+    const msg = String(e.message || e);
+    const notFound = /HTTP 404|not enough|empty result/.test(msg);
+    res.status(notFound ? 404 : 502).json({ error: msg });
   }
 });
 
