@@ -371,7 +371,7 @@
   </section>
 
   <section id="outlook">
-    <div class="sec-head"><h2>Where the S&amp;P 500 could finish 2026</h2><span class="tag">Scenarios · Illustrative</span></div>
+    <div class="sec-head"><h2>Where the S&amp;P 500 could finish 2026</h2><span class="tag" id="fanTag">Scenarios · Illustrative</span></div>
     <div class="scenario-wrap">
       <div class="scn-buttons" role="tablist" aria-label="Scenario selector">
         <button class="scn-btn" data-s="bear" role="tab">▼ Bear</button>
@@ -409,7 +409,7 @@
 
       <div class="caution">
         <strong>Read this before the chart</strong>
-        These scenarios are illustrative framings built from published analyst targets and current conditions — they are not investment advice, and nobody can reliably predict markets. Over the last four years, the Street's median year-end target missed by an average of ~16 percentage points. Strategists also warn that mid-term election years historically bring the deepest drawdowns of the presidential cycle (avg. ~18% intra-year since 1946).
+        The fan chart is a Monte Carlo projection (geometric Brownian motion, 1,000 simulated paths) with drift and volatility estimated from the last year of daily returns; the bands are the 10th/50th/90th percentile outcomes. It assumes constant volatility and log-normally distributed returns — so it models the <em>dispersion</em> of outcomes, not a forecast, and real markets have fatter tails than the model. The scenario write-ups below are illustrative framings built from published analyst targets. None of this is investment advice, and nobody can reliably predict markets — over the last four years the Street's median year-end target missed by an average of ~16 percentage points.
       </div>
     </div>
   </section>
@@ -475,37 +475,71 @@ const yMin=6400,yMax=8600;
 const x=i=>padL+(W-padL-padR)*(i/5);
 const y=v=>padT+(H-padT-padB)*(1-(v-yMin)/(yMax-yMin));
 const start=7483;
-// gently curved monthly paths per scenario
-const paths={
+// Fallback monthly paths (used until /api/projections responds, or if it fails).
+// Live Monte Carlo output replaces these via drawFan() below.
+let paths={
   bear:[start,7350,7080,6820,6700,6900],
   base:[start,7560,7480,7620,7740,7850],
   bull:[start,7700,7860,8050,8180,8300]
 };
-function line(pts){return pts.map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join(" ");}
+let fanStart=start;            // "today" price shown on the chart
+let fanLabels=months.slice();  // x-axis tick labels
+let fanSource="illustrative";  // "illustrative" | "monte-carlo"
 
-let g="";
-// gridlines + y labels
-for(let v=6500;v<=8500;v+=500){
-  g+=`<line x1="${padL}" y1="${y(v)}" x2="${W-padR}" y2="${y(v)}" stroke="#202020" stroke-width="1"/>`;
-  g+=`<text x="${padL-10}" y="${y(v)+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#606060">${v.toLocaleString()}</text>`;
-}
-// x labels
-months.forEach((m,i)=>{ g+=`<text x="${x(i)}" y="${H-16}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#606060">${m}</text>`; });
-// uncertainty cone (bear→bull area)
-const cone = paths.bull.map((v,i)=>`${x(i)},${y(v)}`).join(" ")+" "+paths.bear.slice().reverse().map((v,i)=>`${x(5-i)},${y(v)}`).join(" ");
-g+=`<polygon points="${cone}" fill="#3a3a3a" opacity="0.28"/>`;
-// scenario lines
 const cols={bear:"#f0655a",base:"#da5c2c",bull:"#3fb950"};
-for(const s of ["bear","base","bull"]){
-  g+=`<path id="ln-${s}" d="${line(paths[s])}" fill="none" stroke="${cols[s]}" stroke-width="2.5" stroke-dasharray="${s==='base'?'':'6 5'}" opacity="0.45"/>`;
-  const endV=paths[s][5];
-  g+=`<circle id="pt-${s}" cx="${x(5)}" cy="${y(endV)}" r="5" fill="${cols[s]}" opacity="0.45"/>`;
-  g+=`<text id="tx-${s}" x="${x(5)+12}" y="${y(endV)+4}" font-family="IBM Plex Mono" font-size="13" font-weight="600" fill="${cols[s]}" opacity="0.45">${endV.toLocaleString()}</text>`;
+
+// Sample an array down to `n` evenly spaced points (incl. first & last).
+function sampleTo(arr,n){
+  if(arr.length<=n) return arr.slice();
+  const out=[];
+  for(let i=0;i<n;i++){ out.push(arr[Math.round(i*(arr.length-1)/(n-1))]); }
+  return out;
 }
-// today marker
-g+=`<circle cx="${x(0)}" cy="${y(start)}" r="5" fill="#eeeeee"/>`;
-g+=`<text x="${x(0)}" y="${y(start)-14}" text-anchor="start" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="#eeeeee">TODAY 7,483</text>`;
-svg.innerHTML=g;
+
+function niceAxis(lo,hi){
+  const span=hi-lo||Math.abs(hi)||1;
+  const pad=span*0.10;
+  return {min:lo-pad,max:hi+pad};
+}
+
+function drawFan(){
+  const N=paths.base.length;                 // points per series
+  const last=N-1;
+  const xN=i=>padL+(W-padL-padR)*(N<=1?0:i/last);
+  const all=paths.bear.concat(paths.base,paths.bull).filter(Number.isFinite);
+  const {min:yLo,max:yHi}=niceAxis(Math.min(...all),Math.max(...all));
+  const yN=v=>padT+(H-padT-padB)*(1-(v-yLo)/(yHi-yLo));
+  const lineN=pts=>pts.map((v,i)=>`${i?"L":"M"}${xN(i)},${yN(v)}`).join(" ");
+
+  let g="";
+  // gridlines + y labels (5 evenly spaced)
+  for(let k=0;k<=4;k++){
+    const v=yLo+(yHi-yLo)*k/4;
+    g+=`<line x1="${padL}" y1="${yN(v)}" x2="${W-padR}" y2="${yN(v)}" stroke="#202020" stroke-width="1"/>`;
+    g+=`<text x="${padL-10}" y="${yN(v)+4}" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#606060">${Math.round(v).toLocaleString()}</text>`;
+  }
+  // x labels
+  fanLabels.forEach((m,i)=>{
+    const xi=padL+(W-padL-padR)*(fanLabels.length<=1?0:i/(fanLabels.length-1));
+    g+=`<text x="${xi}" y="${H-16}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#606060">${m}</text>`;
+  });
+  // uncertainty cone (bull over, bear back)
+  const cone=paths.bull.map((v,i)=>`${xN(i)},${yN(v)}`).join(" ")+" "+
+             paths.bear.slice().reverse().map((v,i)=>`${xN(last-i)},${yN(v)}`).join(" ");
+  g+=`<polygon points="${cone}" fill="#3a3a3a" opacity="0.28"/>`;
+  // scenario lines
+  for(const s of ["bear","base","bull"]){
+    g+=`<path id="ln-${s}" d="${lineN(paths[s])}" fill="none" stroke="${cols[s]}" stroke-width="2.5" stroke-dasharray="${s==='base'?'':'6 5'}" opacity="0.45"/>`;
+    const endV=paths[s][last];
+    g+=`<circle id="pt-${s}" cx="${xN(last)}" cy="${yN(endV)}" r="5" fill="${cols[s]}" opacity="0.45"/>`;
+    g+=`<text id="tx-${s}" x="${xN(last)+12}" y="${yN(endV)+4}" font-family="IBM Plex Mono" font-size="13" font-weight="600" fill="${cols[s]}" opacity="0.45">${Math.round(endV).toLocaleString()}</text>`;
+  }
+  // today marker
+  g+=`<circle cx="${xN(0)}" cy="${yN(fanStart)}" r="5" fill="#eeeeee"/>`;
+  g+=`<text x="${xN(0)}" y="${yN(fanStart)-14}" text-anchor="start" font-family="IBM Plex Mono" font-size="12" font-weight="600" fill="#eeeeee">TODAY ${Math.round(fanStart).toLocaleString()}</text>`;
+  svg.innerHTML=g;
+}
+drawFan();
 
 /* ---------------- interactivity ---------------- */
 function setScenario(s){
@@ -531,6 +565,35 @@ function setScenario(s){
 }
 document.querySelectorAll(".scn-btn").forEach(b=>b.addEventListener("click",()=>setScenario(b.dataset.s)));
 setScenario("base");
+
+/* ---- live Monte Carlo projections ---- */
+(async function loadProjections(){
+  try{
+    const r=await fetch("/api/projections?symbol=%5EGSPC");
+    if(!r.ok) throw new Error("projections "+r.status);
+    const p=await r.json();
+    if(!p.bear||!p.base||!p.bull||!p.base.length) throw new Error("empty projection");
+    // Monte Carlo returns `days` daily points; sample to 6 for a clean fan,
+    // and prepend the start price so the fan opens from "today".
+    const pts=7;
+    paths={
+      bear:[p.startPrice,...sampleTo(p.bear,pts-1)],
+      base:[p.startPrice,...sampleTo(p.base,pts-1)],
+      bull:[p.startPrice,...sampleTo(p.bull,pts-1)]
+    };
+    fanStart=p.startPrice;
+    fanLabels=["TODAY","","","","","",`+${p.days}D`];
+    fanSource="monte-carlo";
+    drawFan();
+    setScenario(document.querySelector(".scn-btn.active")?.dataset.s||"base");
+    // annotate the chart header so it's clear this is live, model-driven
+    const tag=document.getElementById("fanTag");
+    if(tag) tag.textContent=`Monte Carlo · ${p.simulations.toLocaleString()} sims · σ≈${(p.sigma*Math.sqrt(252)*100).toFixed(0)}% ann.`;
+  }catch(e){
+    // keep the illustrative fallback fan already drawn; log quietly
+    console.warn("Live projections unavailable, using illustrative fan:",e.message);
+  }
+})();
 
 /* ---------------- LIVE DATA ---------------- */
 /* Quotes come from this site's own backend (/api/quotes, /api/history),
