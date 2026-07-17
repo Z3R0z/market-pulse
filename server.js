@@ -5,6 +5,7 @@
 const express = require("express");
 const path = require("path");
 const { runMonteCarloProjection } = require("./lib/monteCarlo");
+const { rsiLast, smaLast } = require("./lib/indicators");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -171,6 +172,37 @@ app.get("/api/projections", async (req, res) => {
 });
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+// GET /api/indicators?symbol=^GSPC -> live RSI(14) + 50/200-day SMAs. Cached 5 min.
+app.get("/api/indicators", async (req, res) => {
+  const sym = String(req.query.symbol || "^GSPC").trim().toUpperCase();
+  if (!SYMBOL_RE.test(sym)) return res.status(400).json({ error: "invalid symbol" });
+  try {
+    const data = await cached("ind:" + sym, 300_000, async () => {
+      const c = await fetchChart(sym, "1y");
+      const closes = (c.indicators?.quote?.[0]?.close || []).filter((v) => v != null);
+      if (closes.length < 15) throw new Error("not enough price history for indicators");
+      const price = closes[closes.length - 1];
+      const rsi = rsiLast(closes, 14);
+      const sma50 = smaLast(closes, 50);
+      const sma200 = smaLast(closes, 200);
+      return {
+        symbol: c.meta?.symbol || sym,
+        price,
+        rsi,
+        sma50,
+        sma200,
+        vs50: sma50 != null ? (price / sma50 - 1) * 100 : null,
+        vs200: sma200 != null ? (price / sma200 - 1) * 100 : null,
+      };
+    });
+    res.json(data);
+  } catch (e) {
+    const msg = String(e.message || e);
+    const notFound = /HTTP 404|not enough|empty result/.test(msg);
+    res.status(notFound ? 404 : 502).json({ error: msg });
+  }
+});
 
 app.use(express.static(path.join(__dirname, "public")));
 

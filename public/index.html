@@ -566,7 +566,48 @@ function setScenario(s){
 document.querySelectorAll(".scn-btn").forEach(b=>b.addEventListener("click",()=>setScenario(b.dataset.s)));
 setScenario("base");
 
-/* ---- live Monte Carlo projections ---- */
+/* ---- live technical indicators (RSI, moving averages) ---- */
+(async function loadIndicators(){
+  try{
+    const r=await fetch("/api/indicators?symbol=%5EGSPC");
+    if(!r.ok) throw new Error("indicators "+r.status);
+    const d=await r.json();
+    // RSI card
+    if(typeof d.rsi==="number"){
+      const rsi=d.rsi, rounded=rsi.toFixed(1);
+      const rv=document.getElementById("rsiVal"); if(rv) rv.textContent=rounded;
+      const rf=document.getElementById("rsiFill"); if(rf) rf.style.width=Math.max(0,Math.min(100,rsi))+"%";
+      const rs=document.getElementById("rsiSig");
+      if(rs){
+        let label, cls;
+        if(rsi>=70){ label="OVERBOUGHT"; cls="sig neg"; }
+        else if(rsi<=30){ label="OVERSOLD"; cls="sig neg"; }
+        else if(rsi>=50){ label="BULLISH · NOT OVERBOUGHT"; cls="sig pos"; }
+        else { label="BEARISH · NOT OVERSOLD"; cls="sig neu"; }
+        rs.textContent=label; rs.className=cls;
+      }
+    }
+    // Moving-average card
+    if(typeof d.vs50==="number"){
+      const mv=document.getElementById("maVal");
+      if(mv) mv.textContent=(d.vs50>=0?"+":"")+d.vs50.toFixed(1)+"%";
+      const ms=document.getElementById("maSig");
+      if(ms){
+        const above50=d.vs50>=0, above200=(d.vs200??0)>=0;
+        ms.textContent=(above50&&above200)?"ABOVE 50-DMA & 200-DMA"
+          :(above50?"ABOVE 50-DMA":"BELOW 50-DMA");
+        ms.className="sig "+(above50&&above200?"pos":above50?"neu":"neg");
+      }
+      const mt=document.getElementById("maText");
+      if(mt && d.sma50!=null && d.sma200!=null){
+        const f=n=>Math.round(n).toLocaleString();
+        mt.textContent=`Price (${f(d.price)}) sits ${d.vs50>=0?"above":"below"} the 50-day average (~${f(d.sma50)}) and ${d.vs200>=0?"above":"below"} the 200-day (~${f(d.sma200)}). Live from the last year of daily closes.`;
+      }
+    }
+  }catch(e){
+    console.warn("Live indicators unavailable, using static values:",e.message);
+  }
+})();
 (async function loadProjections(){
   try{
     const r=await fetch("/api/projections?symbol=%5EGSPC");
