@@ -198,13 +198,6 @@
   /* Moving Border — ember gradient tracing the primary CTA */
   @property --mb{syntax:'<angle>'; initial-value:0deg; inherits:false;}
   .search-btn{isolation:isolate;}
-  .search-btn::after{content:""; position:absolute; inset:-2px; border-radius:3px; padding:2px;
-    background:conic-gradient(from var(--mb), transparent 0deg, #ffb48c 40deg, var(--ember) 96deg, transparent 170deg, transparent 360deg);
-    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor; mask-composite:exclude;
-    animation:mbspin 2.6s linear infinite; z-index:-1; pointer-events:none;}
-  @keyframes mbspin{to{--mb:360deg;}}
 
   /* Card hover — subtle neutral lift, no colored tint */
   .q, .theme, .ind{position:relative; overflow:hidden; transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;}
@@ -212,7 +205,6 @@
 
   @media (prefers-reduced-motion: reduce){
     .meteor{display:none;}
-    .search-btn::after{animation:none; background:var(--ember);}
     .q:hover, .theme:hover, .ind:hover{transform:none;}
   }
 </style>
