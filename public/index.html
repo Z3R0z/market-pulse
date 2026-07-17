@@ -235,7 +235,7 @@
 <main class="wrap">
 
   <div class="board" id="board"></div>
-  <div class="board-cap">Closing values, July 1, 2026. Dow intraday record high: 52,742.66.</div>
+  <div class="board-cap">Snapshot — July 1, 2026 close. Loading live prices…</div>
 
   <section id="lookup">
     <div class="sec-head"><h2>Analyze any stock</h2><span class="tag">Search · Live</span></div>
@@ -685,6 +685,8 @@ async function refreshQuotes(){
     const now=new Date();
     setBadge("live","LIVE · "+ok+"/8");
     document.getElementById("asofText").textContent="UPDATED "+now.toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}).toUpperCase()+" · DATA MAY BE DELAYED";
+    const cap=document.querySelector(".board-cap");
+    if(cap) cap.textContent="Live prices, updated "+now.toLocaleString("en-US",{month:"long",day:"numeric",year:"numeric"})+". Data may be delayed.";
   } else {
     setBadge("snap","SNAPSHOT · JUL 1 CLOSE");
   }
