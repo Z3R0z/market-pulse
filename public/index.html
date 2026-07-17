@@ -227,8 +227,8 @@
   <div class="fx spotlight" aria-hidden="true"></div>
   <div class="fx meteors" id="meteors" aria-hidden="true"></div>
   <div class="eyebrow"><span class="prompt">~/</span> Market Pulse · U.S. Equities</div>
-  <h1>Records above,<br>rate risk below.</h1>
-  <p class="hero-sub">The Dow touched a fresh all-time high on July&nbsp;1 before fading, while the Nasdaq slipped as investors took profits in semiconductors — the stocks that powered an 80%+ first-half surge. Underneath the rally: 4%+ inflation, a Fed debating hikes rather than cuts, and an AI capex boom carrying roughly half of all S&amp;P 500 earnings growth.</p>
+  <h1 id="heroH1">Records above,<br>rate risk below.</h1>
+  <p class="hero-sub" id="heroSub">The Dow touched a fresh all-time high on July&nbsp;1 before fading, while the Nasdaq slipped as investors took profits in semiconductors — the stocks that powered an 80%+ first-half surge. Underneath the rally: 4%+ inflation, a Fed debating hikes rather than cuts, and an AI capex boom carrying roughly half of all S&amp;P 500 earnings growth.</p>
   <div class="asof"><span class="dot" id="statusDot"></span> <span id="asofText">CLOSE · WED JUL 01 2026 · NYSE / NASDAQ</span> <span class="live-badge snap" id="liveBadge">SNAPSHOT</span> <button class="refresh-btn" id="refreshBtn" type="button">↻ REFRESH</button></div>
 </header>
 
@@ -658,10 +658,43 @@ function setBadge(state, text){
   b.textContent=text;
   document.getElementById("statusDot").style.background = state==="live" ? "var(--up)" : "var(--ember)";
 }
+/* Build the hero headline + subhead from live index moves (facts only). */
+function writeHeadline(m){
+  const sp=m["^GSPC"], nas=m["^IXIC"], dow=m["^DJI"], vix=m["^VIX"],
+        gold=m["GC=F"], oil=m["CL=F"], btc=m["BTC-USD"];
+  const h1=document.getElementById("heroH1"), sub=document.getElementById("heroSub");
+  if(!sp || !h1) return;
+  const dir=w=>w.pct>=0?"up":"down";
+  const abs=w=>Math.abs(w.pct).toFixed(2);
+  // Headline: two-line, driven by the S&P direction + breadth of the move.
+  const strong=Math.abs(sp.pct)>=1;
+  const up=sp.pct>=0;
+  const l1 = up ? (strong?"Broad rally,":"Grinding higher,") : (strong?"Broad sell-off,":"Softer session,");
+  const l2 = vix ? (vix.px>=20?"volatility rising." : vix.px<=14?"volatility calm.":"markets steady.")
+                 : (up?"risk-on.":"risk-off.");
+  h1.innerHTML=`${l1}<br>${l2}`;
+  // Subhead: only statements we can prove from the numbers.
+  const parts=[];
+  if(sp)  parts.push(`The S&P 500 is ${dir(sp)} ${abs(sp)}%`);
+  if(nas) parts.push(`the Nasdaq ${dir(nas)} ${abs(nas)}%`);
+  if(dow) parts.push(`the Dow ${dir(dow)} ${abs(dow)}%`);
+  let s = parts.join(", ") + ". ";
+  const tail=[];
+  if(vix)  tail.push(`the VIX sits at ${vix.px.toFixed(1)}`);
+  if(gold) tail.push(`gold ${dir(gold)} ${abs(gold)}%`);
+  if(oil)  tail.push(`crude ${dir(oil)} ${abs(oil)}%`);
+  if(btc)  tail.push(`bitcoin ${dir(btc)} ${abs(btc)}%`);
+  if(tail.length){
+    let t=tail.slice(0,3).join(", ").replace(/,([^,]*)$/,", and$1");
+    s += t.charAt(0).toUpperCase()+t.slice(1)+".";
+  }
+  if(sub) sub.textContent=s;
+}
 async function refreshQuotes(){
   setBadge("snap","LOADING…");
   const data = await fetchJSON("/api/quotes");
   let ok=0;
+  const moves={};
   const cards=document.querySelectorAll("#board .q");
   if(data && !data.error){
     for(const s of SYMBOLS){
@@ -669,6 +702,7 @@ async function refreshQuotes(){
       if(!q || q.price==null) continue;
       const px=q.price, prev=q.prevClose||px;
       const chg=px-prev, pct=prev?(chg/prev*100):0, dir=chg>=0?"u":"d";
+      moves[s.y]={px,pct,dir};
       const card=cards[s.i];
       card.querySelector(".px").textContent=s.fmt(px);
       const c=card.querySelector(".chg");
@@ -687,6 +721,7 @@ async function refreshQuotes(){
     document.getElementById("asofText").textContent="UPDATED "+now.toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}).toUpperCase()+" · DATA MAY BE DELAYED";
     const cap=document.querySelector(".board-cap");
     if(cap) cap.textContent="Live prices, updated "+now.toLocaleString("en-US",{month:"long",day:"numeric",year:"numeric"})+". Data may be delayed.";
+    writeHeadline(moves);
   } else {
     setBadge("snap","SNAPSHOT · JUL 1 CLOSE");
   }
