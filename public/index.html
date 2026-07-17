@@ -41,7 +41,7 @@
   body{background:var(--void); color:var(--paper); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased;}
 
   /* ---------- ticker ---------- */
-  .ticker{position:sticky; top:0; z-index:50; background:#050505; color:var(--paper); overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:2px solid var(--ember);}
+  .ticker{position:sticky; top:0; z-index:50; background:#050505; color:var(--paper); overflow:hidden; white-space:nowrap; font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:1px solid var(--iron);}
   .ticker-track{display:inline-block; animation:scroll 42s linear infinite;}
   .ticker span{margin:0 26px;}
   .ticker .u{color:var(--up);} .ticker .d{color:var(--down);}
@@ -208,13 +208,9 @@
     animation:mbspin 2.6s linear infinite; z-index:-1; pointer-events:none;}
   @keyframes mbspin{to{--mb:360deg;}}
 
-  /* Card Hover Glow — spotlight-on-hover + lift for quote/theme/indicator cards */
+  /* Card hover — subtle neutral lift, no colored tint */
   .q, .theme, .ind{position:relative; overflow:hidden; transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;}
-  .q::after, .theme::after, .ind::after{content:""; position:absolute; inset:0; border-radius:inherit;
-    background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(218,92,44,0.16), transparent 62%);
-    opacity:0; transition:opacity .25s ease; pointer-events:none;}
-  .q:hover, .theme:hover, .ind:hover{transform:translateY(-2px); border-color:var(--slate); box-shadow:0 0 0 1px rgba(218,92,44,0.22), 0 10px 26px rgba(0,0,0,0.55);}
-  .q:hover::after, .theme:hover::after, .ind:hover::after{opacity:1;}
+  .q:hover, .theme:hover, .ind:hover{transform:translateY(-2px); border-color:var(--slate); box-shadow:0 10px 26px rgba(0,0,0,0.55);}
 
   @media (prefers-reduced-motion: reduce){
     .meteor{display:none;}
@@ -1051,14 +1047,6 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
     }
   }
 
-  // Card hover glow — delegated so dynamically-built cards are covered too
-  document.addEventListener("mousemove", e=>{
-    const c = e.target.closest && e.target.closest(".q, .theme, .ind");
-    if(!c) return;
-    const r = c.getBoundingClientRect();
-    c.style.setProperty("--mx", (e.clientX-r.left)+"px");
-    c.style.setProperty("--my", (e.clientY-r.top)+"px");
-  });
 })();
 </script>
 </body>
