@@ -188,8 +188,6 @@
   /* Meteors — monochrome streaks echoing the "streaming data" motif */
   .meteor{position:absolute; top:-20px; width:2px; height:2px; border-radius:9999px; background:var(--fog); box-shadow:0 0 0 1px rgba(180,180,180,.08); animation:meteor linear infinite;}
   .meteor::before{content:""; position:absolute; top:50%; transform:translateY(-50%); width:72px; height:1px; background:linear-gradient(90deg,var(--fog),transparent);}
-  .meteor.ember{background:var(--ember);}
-  .meteor.ember::before{background:linear-gradient(90deg,var(--ember),transparent);}
   @keyframes meteor{
     0%{transform:rotate(215deg) translateX(0); opacity:0;}
     8%{opacity:1;}
