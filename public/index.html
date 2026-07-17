@@ -1038,7 +1038,7 @@ setInterval(refreshQuotes, 120000); // auto-refresh quotes every 2 min
   if(mc && !reduce){
     for(let i=0;i<14;i++){
       const m=document.createElement("span");
-      m.className="meteor"+(Math.random()<0.22?" ember":"");
+      m.className="meteor";
       m.style.left=(Math.random()*120-10).toFixed(1)+"%";
       m.style.top=(Math.random()*40-20).toFixed(0)+"px";
       m.style.animationDelay=(Math.random()*8).toFixed(2)+"s";
